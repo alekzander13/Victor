@@ -1,0 +1,145 @@
+* {
+    box-sizing: border-box;
+}
+html, body, div, span, h1, h2, h3, h4, h5, h6, p, a, ul, li{
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    vertical-align: baseline;
+}
+body {
+    font-family: system,'Segoe UI',Tahoma,Verdana,sans-serif;    
+    background-color: #f7f7f7;
+	height: 90vh;
+}
+
+table{
+    border-collapse: collapse;
+	width: 100%;
+}
+
+table,th,td{
+    border: 1px solid #ccc;
+}
+
+thead {
+    background-color: #c9d2d8;
+}
+tbody tr:nth-child(odd) {
+    background-color: #e6edf2;
+}
+  tbody tr:nth-child(even) {
+ 	background-color: #feffdf;
+}
+td{
+	padding: 3px 3px 3px 3px;
+}
+#header {
+	height: 42px;
+	background-color: #2573a8;
+	color: #fff;
+	font-size: 18px;
+	padding: 8px 8px 8px 8px;
+}
+#current_section{
+	display: inline-block;
+	/* margin: 0 20px 0 0px; */
+	/* align-items: center; */
+}
+#wrapper {
+	/*height: 100%;*/
+	display: flex;
+    flex-direction: row;
+	position: relative;
+	background-color: #f3f2f1;
+}
+#sidebar1 {
+    float: left;
+    width: 20%;
+}
+.item_system_menu{
+	height: 28px;
+	padding: 4px 4px 4px 4px;
+	float: right;
+	border: none;
+	
+}
+.item_menu_section1 {
+}
+.item_menu_section_caption_1{
+	padding: 4px 4px 4px 8px;
+}
+.menu_section2 {
+ 	display: none;
+}
+.item_menu_section_caption_2{
+	padding: 4px 4px 4px 16px;
+}
+.item_menu_section2:hover{
+	/* background: #c9d2d8; */
+}
+.href_item_menu_section_1, .href_item_menu_section_2{
+	text-decoration: none;
+	color: currentColor;
+ 	display: block;
+}
+.href_item_menu_section_1 {
+	/* margin: 4px 4px 4px 8px; */
+}
+.href_item_menu_section_2 {
+	/* margin: 4px 4px 4px 8px; */
+}
+.item_menu_section_caption_1:hover, .item_menu_section_caption_2:hover{
+	background: #c9d2d8;
+}
+#sidebar2 {
+	display: none;
+    float: right;
+    width: 20%;
+}
+#work {
+	/*
+	height: 100%;
+    margin-left: 20%;
+    margin-bottom: 40px;
+	*/
+	width: 100%;	
+	background-color: #fff;
+}
+#footer {
+	align-items: center;
+}
+tbody tr:hover {
+    background: #446eb6;
+    color: #fff;
+}
+
+.table_list{
+	re: 50px;
+}
+.table_list_th_id{
+	width: 50px;
+}
+.table_list_col_id{
+}
+.table_list_td_id{
+	text-align: right;
+}
+tr.selected td{
+	background: red;
+}
+.toolbar{
+	background-color: #c2bec3;
+	padding: 4px;
+ }
+ .toolbar_button{
+	border: none;
+	height: 26px;
+	padding: 0 10px 0 10px;
+	background: #f0f0f0;
+	transition: all 0.15s ease-in 0s;
+}
+.toolbar_button:hover {
+	background: #c9d2d8;
+}

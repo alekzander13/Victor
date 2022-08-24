@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMS</title>
+    <link type="text/css" href="static/css/styles.css" rel="stylesheet">
+    <script src="static/js/main.js" defer></script>
+</head>
+<body>
+    <header class="header">
+        <div id="current_section"> Назва активного розділу (+ системне меню)</div>
+        <button class="item_system_menu">Системне меню</button>
+    </header>
+    <main class="wrapper">
+        <section class="main-sidebar">
+            #menu#
+        </section>
+        <div class="main-work">
+            <div class='toolbar'>
+                <button class='toolbar-button' id="butRefresh">Оновити</button>
+                <button class='toolbar-button'>Додати</button>
+                <button class='toolbar-button'>Редагувати</button>
+            </div>
+            <div style="height: 100%;">
+                <table class='table-list' readonly=true id="tableBodyID">
+
+                </table>
+            </div>
+            <div id="pagination_wrapper" class='toolbar'>
+                <div>
+                    <button id="pagination_left" class='toolbar-button' style="margin-right: 30px;">&lArr;</button>
+                </div>
+                <div id="pagination">
+                    
+                </div>
+                <div>
+                    <button id="pagination_right" class='toolbar-button' style="margin-left: 22px; margin-right: 30px;">&rArr;</button>
+                </div>
+                <div>
+                    <input type="number" id="pagination_input">
+                    <button id="pagination_input_but" class='toolbar-button' style="margin-left: 4px;">&crarr;</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="footer">
+        <p>Контакт: info@avsoft.com.ua    Copyright © AV-Soft, 2022</p>
+    </footer>
+</body>
+</html>
+
+<!--
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link type="text/css" href="static/css/styles.css" rel="stylesheet">
+        <title>BMS</title>
+        <script src="static/js/main.js" defer></script>
+    </head>
+    <body>
+        <header id="header">
+            <div id="current_section"> Назва активного розділу (+ системне меню)</div>
+            <button class="item_system_menu">Системне меню</button>
+        </header>
+        <div id="wrapper">
+            <div id="sidebar1">
+				#menu#
+            </div>
+            
+            <div id="work">
+                
+                <div class='toolbar'>
+                    <button class='toolbar_button' id="butRefresh">Оновити</button>
+                    <button class='toolbar_button'>Додати</button>
+                    <button class='toolbar_button'>Редагувати</button>
+                </div>
+                <table class='table_list' readonly=true id="tableBodyID">
+                    <colgroup>
+                        <col class='table_list_col_id'>
+                        <col class='table_list_col_name'>
+                    </colgroup>
+                    <thead>
+                        <tr class='table_list_tr'>
+                            <th class='table_list_th_id'>id</th>
+                            <th class='table_list_th_name'>Найменування</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                            <tr class='table_list_tr'>
+                                <td class='table_list_td_id'>1</td>
+                                <td class='table_list_td_name'>Квіти України                                                                                       </td>
+                            </tr>
+                            <tr class='table_list_tr'>
+                                <td class='table_list_td_id'>2</td>
+                                <td class='table_list_td_name'>Аптека №2                                                                                           </td>
+                            </tr>
+                            <tr class='table_list_tr'>
+                                <td class='table_list_td_id'>3</td>
+                                <td class='table_list_td_name'>Митниця                                                                                             </td>
+                            </tr>
+                            <tr class='table_list_tr'>
+                                <td class='table_list_td_id'>4</td>
+                                <td class='table_list_td_name'>Магазин №5                                                                                          </td>
+                            </tr>
+                            <tr class='table_list_tr'>
+                                <td class='table_list_td_id'>5</td>
+                                <td class='table_list_td_name'>Магазин №2                                                                                          </td>
+                            </tr>
+                    </tbody>
+                </table>
+                <div class='toolbar' style="display: flex; align-items: center;
+                justify-content: center;position: fixed;bottom: 0;width: -webkit-fill-available;">
+                    <button class='toolbar_button' style="margin-right: 30px;">Ліво</button>
+                    <button class='toolbar_button'>Право</button>
+                </div>
+            </div>
+        </div>
+        <div id="footer">
+            <div>Контакт: info@avsoft.com.ua    Copyright © AV-Soft, 2022</div>
+        </div>	
+</html>
+
+-->
