@@ -1,17 +1,3 @@
-Перший запит:
-	метод: "GET"
-	шлях:  "/company"
-Відповідь сервера:
-	{
-		"tables": [
-			{"name": "counterparts", "caption": "Контрагенти"},
-			{"name": "goods", "caption": "Товари"},
-			{"name": "orders", "caption": "Замовлення"}
-		]
-	}	
-
-
-
 Запит на отримання даних:
 	метод: "POST"
 	шлях: "/loadtable"
@@ -24,22 +10,22 @@
 			],
 		"page": 1,
 		"sort": "id",
-		"sortType": "toincrease", /* todecrease */
-		"table": "counterparts"
+		"sortType": "toincrease",
+		"table": "Контрагенти"
 	}
 Відповідь сервера:
 	{
 		"countPage": 30,
 		"page": 1,
-		"table": "counterparts",
+		"table": "Контрагенти",
 		"tableHeadres": [
 			{"caption": "ID", "name": "id"},
 			{"caption": "Найменування", "name": "name"},
 			{"caption": "Вартість", "name": "price"}
 		],
 		"items": [
-			[{"headerName": "id", "value": "2"}, {"headerName": "name", "value": "Квіти"}],
-			[{"headerName": "id", "value": "3"}, {"headerName": "name", "value": "Квіти України"}],
+			["id": "2", "name": "Квіти"],
+			["id": "3", "name": "Квіти України"],
 		]
 	}
 
