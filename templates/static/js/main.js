@@ -1,14 +1,29 @@
 /*jshint esversion: 6*/
 /*jshint asi: true*/
 
+"use strict"
+
 /* jshint ignore:start */
-const sendFetch = async (path, body, callback, returnerror) => {
+const sendFetch = async (method, path, body, callback, returnerror) => {
     try {
-        const response = await fetch(path, {
-            credentials: 'same-origin',
-            method: 'POST',
-            body: body
-        }); 
+        let response = Response;
+        switch (method.toLowerCase()) {
+            case "get":
+                response = await fetch(path, {
+                    credentials: 'same-origin',
+                    method: 'GET'
+                });
+                break;
+            case "post":
+                response = await fetch(path, {
+                    credentials: 'same-origin',
+                    method: 'POST',
+                    body: body
+                }); 
+                break;
+            default:
+                throw("bad method to fetch");
+        }
         if (response.ok && response.status === 200) {
             const elements = await response.json();
             if(callback) {
@@ -56,16 +71,106 @@ const getStyle = (el, styleProp) => {
     }
 };
 
-const tableHead = {
-    array : [],
-    add(name) {
-        this.array.push(name);
-    },
+
+/*************************************************************** 
+*****************************Struct*****************************
+***************************************************************/
+class tableFilter {
+    constructor(name, caption) {
+        this.name = name;
+        this.caption = caption;
+        this.list = [];
+    }
+    getName() {
+        return this.name;
+    }
+    getCaption() {
+        return this.caption;
+    }
+    clearValue() {
+        for (let index = 0; index < this.list.length; index++) {
+            this.list[index].value = '';
+        }
+    }
     clear() {
-        this.array.splice(0, this.array.length); 
+        this.list.splice(0, this.list.length);   
+    }
+    add(name, action, value) {
+        this.list.push({name, action, value});
+    }
+    getAll() {
+        return this.list;
+    }
+}
+
+const filterTableList = {
+    list: [],
+    set(element) {
+        const newEl = new tableFilter(element.name, element.caption);
+        this.list.push(newEl);
     },
     get() {
-        return this.array;
+        for (const el of this.list) {
+            if (el.getName() === activeTable) {
+                return el;
+            }
+        }
+    }
+};
+
+
+const numberFilterParam = {
+    value: ["equal", "notequal", "greater", "greaterorequal", "less", "lessorequal"],
+    text: ["Дорівнює", "Не дорівнює", "Більше", "Більше або дорівнює", "Менше", "Менше  або дорівнює"]
+};
+
+const textFilterParam = {
+    value: ["contains", "notcontains"],
+    text: ["Містить", "Не містить"]
+};
+
+const boolFilterParam = {
+    value: ["chois"],
+    text: ["Вибір"]
+}
+
+
+const filterDocumentID = {
+    id : 0,
+    set() {
+        return ++this.id;
+    },
+    get() {
+        return this.id;
+    }
+};
+
+let activeTable = "";
+
+
+const tableHead = {
+    names : [],
+    captions : [],
+    add(name, caption) {
+        this.names.push(name);
+        this.captions.push(caption);
+    },
+    clear() {
+        this.names.splice(0, this.names.length); 
+        this.captions.splice(0, this.captions.length); 
+    },
+    getNames() {
+        return this.names;
+    },
+    getNameByCap(cap) {
+        const pos = this.captions.findIndex(el => {return cap === el});
+        if (pos > -1) {
+            return this.names[pos];
+        }
+        return "";
+    },
+    getCaptions() {
+        return this.captions;
     }
 };
 
@@ -98,9 +203,9 @@ const sortObj = {
     },
     getType() {
         if (this.type === 0) {
-            return 'Збільшення';
+            return 'toincrease';
         } 
-        return 'Зменшення';
+        return 'todecrease';
     },
     getName() {
         return this.name;
@@ -110,16 +215,94 @@ const sortObj = {
     }
 }
 
-pageNum.set(1);
-sortObj.set('', -1);
+
+/*************************************************************** 
+*****************************Struct*****************************
+***************************************************************/
+
+
+/*************************************************************** 
+**********************Server Reqeusts***************************
+***************************************************************/
+
+//loadStruct - company struct loading at start
+const loadStruct = () => {
+    sendFetch("get", "/company", "", (response) => {
+        //console.log(response);
+        pageNum.set(1);
+        sortObj.set('', -1);
+        for (let index = 0; index < response.tables.length; index++) {
+            const element = response.tables[index];
+            filterTableList.set(element);
+            if (index === 0) {
+                activeTable = element.name; 
+            }
+        }
+        loadTable();
+    },
+    (error) => {alert(error + `\n Зверніться в службу технічної підтримки`);}); 
+};
+
+const loadTable = (event) => {
+    const obj = {};
+    obj.table = activeTable;
+    obj.countElement = getElementCountTable();
+    obj.page = pageNum.get();
+    if (sortObj.getName() != '') {
+        obj.sort = sortObj.getName();
+        obj.sortType = sortObj.getType();
+    } else {
+        obj.sort = '';
+        obj.sortType = '';
+    }
+    obj.filters = [];
+    const filters = filterTableList.get();   
+    for (const f of filters.getAll()) {
+        if (f.value !== '') {
+            obj.filters.push(f);
+        }
+    }
+
+    //console.log(obj);
+
+    sendFetch("post", "/loadtable", JSON.stringify(obj), 
+    (response) => {
+        //console.log(response);
+        if (response.table !== activeTable) {
+            //alert('wrong table');
+            //return;
+        }
+        const Table = document.getElementById('tableBodyID');
+        if(response.items.length === obj.countElement) {
+            Table.className = 'table-list';
+        } else {
+            Table.classList.remove('table-list');
+        }
+        const cols = makeTableColGroup(response.tableHeadres);
+        const headers = makeTableHead(response.tableHeadres);
+        const body = createTableBody(response.items);
+        
+        makePaginate(response.page, response.countPage);
+        Table.innerHTML = ``;
+        Table.appendChild(cols);
+        Table.appendChild(headers);
+        Table.appendChild(body);
+    }, 
+    (error) => {alert(error + `\n       
+    Зверніться в службу технічної підтримки`);});
+};
+
+/*************************************************************** 
+**********************Server Reqeusts***************************
+***************************************************************/
 
 const makeTableColGroup = (elements) => {
     const cgroup = document.createElement("colgroup");
     for (let index = 0; index < elements.length; index++) {
         const col = document.createElement("col");
-        col.className = "table_list_col_name";
+        col.className = "table-list-col-name";
         if (index == 0) {
-            col.className = "table_list_col_id";
+            col.className = "table-list-col-id";
         }
         cgroup.appendChild(col);
     }
@@ -133,11 +316,12 @@ const makeTableHead = (elements) => {
     tr.className = "table-list-tr";
     tableHead.clear();
     for (let index = 0; index < elements.length; index++) {
-        tableHead.add(elements[index]);
+        const elem = elements[index];
+        tableHead.add(elem.name, elem.caption);
         const td = document.createElement("td");
         td.className = "table-list-th-name";
-        td.innerHTML = `<span>${elements[index]}</span>`;
-        if (sortObj.getName() === elements[index]) {
+        td.innerHTML = `<span>${elem.caption}</span>`;
+        if (sortObj.getName() === elem.name) {
             td.setAttribute('sort', sortObj.getTypeNum());
             td.appendChild(makeArrowSort(sortObj.getTypeNum()));
         }
@@ -161,23 +345,46 @@ const createTableBody = (elements) => {
     return tbody;
 };
 
-const createTableRow = (element) => {
-    const newEl = document.createElement('tr');
-    newEl.className = 'table-list-tr';
-    const array = tableHead.get();
-    for (let i = 0; i < array.length; i++) {
-        const el = array[i];
+const createTableRow = (elements) => {
+    const newRow = document.createElement('tr');
+    newRow.className = 'table-list-tr';
+    const tableHeaders = tableHead.getNames();
+    for (let i = 0; i < tableHeaders.length; i++) {
+        const tableHeader = tableHeaders[i];
         const td = document.createElement('td');
-        if (el === 'id') {
-            td.className = 'table_list_td_id';
+        if (tableHeader === "id") {
+            td.className = 'table-list-td-id';
         } else {
-            td.className = 'table_list_td_name';
+            td.className = 'table-list-td-name';
         }
         td.classList.add('unselectable');
-        td.innerText = element[el];
-        newEl.appendChild(td);
+        td.classList.add('td-size');
+        let value = "";
+        let tableName = "";
+        for (const element of elements) {
+            if (element.headerName === tableHeader) {
+                value = element.value;
+                tableName = element.headerName;
+                continue
+            } 
+        }
+        td.title = value;
+        td.innerText = value;
+        td.setAttribute('tableName', tableName);
+        td.onclick = (event) => {
+            const actElem = event.target;
+            const elements = document.querySelectorAll('.td-size');
+            for (const element of elements) {
+                if (element === actElem) {
+                    actElem.classList.add('td-active'); 
+                } else {
+                    element.classList.remove('td-active');
+                }
+            }
+        };
+        newRow.appendChild(td);
     }
-    return newEl;
+    return newRow;
 };
 
 const getElementCountTable = () => {
@@ -191,7 +398,6 @@ const getElementCountTable = () => {
     tempEl.className = 'table-list-tr';
     const elementHeight = Number.parseInt(getStyle(document.querySelector('.table-list-tr'), 'height'));
     Table.removeChild(tempEl);
-    delete tempEl;
     Table.innerHTML = saveTable;
     return Math.floor((workHeight-elementHeight)/elementHeight);
 };
@@ -259,37 +465,6 @@ const makePaginate = (actPage = 0, countPage = 0) => {
     }
 };
 
-const loadTable = (event) => {
-    const obj = {};
-    obj.Таблиця = 'Контрагенти';
-    obj.КількістьЕлементів = getElementCountTable();
-    obj.Сторінка = pageNum.get();
-    if (sortObj.getName() != '') {
-        obj.Сортування = sortObj.getName();
-        obj.ТипСортування = sortObj.getType();
-    } else {
-        obj.Сортування = '';
-        obj.ТипСортування = '';
-    }
-    obj.Фільтрування = '';
-    //console.log(obj);
-    sendFetch("/get", JSON.stringify(obj), 
-    (response) => {
-        const Table = document.getElementById('tableBodyID');
-        Table.innerHTML = ``;
-        if(response.Елементи.length === obj.КількістьЕлементів) {
-            Table.className = 'table-list';
-        } else {
-            Table.classList.remove('table-list');
-        }
-        Table.appendChild(makeTableColGroup(response.Заголовки));
-        Table.appendChild(makeTableHead(response.Заголовки));
-        Table.appendChild(createTableBody(response.Елементи));
-        makePaginate(response.Сторінка, response.КількістьСторінок);
-    }, 
-    (error) => {alert(error + `\n       
-    Зверніться в службу технічної підтримки`);});
-};
 
 const refreshTable = () => {
     //sortObj.set('', -1);
@@ -368,7 +543,7 @@ const sort = event => {
                 element.setAttribute('sort', 0);
                 element.appendChild(makeArrowSort(0));
             }
-            sortObj.set(element.childNodes[0].innerText, +element.getAttribute('sort'));
+            sortObj.set(tableHead.getNameByCap(element.childNodes[0].innerText), +element.getAttribute('sort'));
         } else {
             element.removeAttribute('sort');
             if (element.childNodes.length > 1) {
@@ -379,10 +554,292 @@ const sort = event => {
     loadTable();
 };
 
-loadTable();
 
+
+/*************************************************************** 
+****************************Filter******************************
+***************************************************************/
+const closeModalForm = (event) => {
+    event.stopPropagation();
+    if (event.keyCode === 27 || 
+        event.target.id === 'modal-wrapper' || 
+        event.target.id === 'butCloseModal' ||
+        event.target.id === 'filter_but_cancel' ||
+        event.target.id === 'filter_but_ok') {
+        if(document.getElementById('modal-wrapper')){
+            document.body.removeChild(document.getElementById('modal-wrapper'));
+        }
+        document.removeEventListener('keyup', closeModalForm);
+    }
+};
+
+const makeModalForm = () => {
+    const mainForm = document.createElement('div');
+    mainForm.id = 'modal-wrapper';
+    mainForm.className = 'modal-panel';
+    mainForm.addEventListener('click', closeModalForm);
+    document.addEventListener('keyup', closeModalForm);
+    return mainForm;
+};
+
+const makeButtonFilter = (parent, id, cap) => {
+    const el = document.createElement('button');
+    parent.appendChild(el);
+    el.id = id;
+    el.innerHTML = cap;
+    return el;
+};
+
+const setFilterNameParamByValue = (id) => {
+    const name = document.getElementById("filter_name_"+id);
+    const action = document.getElementById("filter_action_"+id);
+    const value = document.getElementById("filter_value_"+id);
+    if (numberFilterParam.value.includes(action.value)) {
+        const parent = value.parentNode;
+        parent.innerHTML = `<input type="number" id="filter_value_${id}" style="max-width: 100px;"></input>`;
+    } else if (boolFilterParam.value.includes(action.value)) {
+        const parent = value.parentNode;
+        parent.innerHTML = `<select id = "filter_value_${id}">
+        <option hidden="" disabled="" selected="" value="">  </option>
+        <option value="true">Так</option>
+        <option value="false">Ні</option>
+        </select>`; 
+    } else {
+        const parent = value.parentNode;
+        parent.innerHTML = `<input type="text" id="filter_value_${id}" style="max-width: 100px;"></input>`;
+    }
+};
+
+const changeFilterValueParam = (event) => {
+    const id = event.target.id.split("filter_action_")[1];
+    setFilterNameParamByValue(id);
+};
+
+const addNewFilter = (event) => {
+    event?.stopPropagation();
+    parent = document.getElementById('filter_list');
+    const newLine = document.createElement('tr');
+    parent.appendChild(newLine);
+
+    const id = filterDocumentID.set();
+    
+    newLine.id = 'filter_line_'+id;
+
+    const name = document.createElement('td');
+    newLine.appendChild(name);
+        const inp1 = document.createElement('input');
+        inp1.type = 'checkbox';
+        inp1.id = 'checkbox_'+id;
+        name.appendChild(inp1);
+        const scrollName = document.createElement('select');
+        scrollName.id = 'filter_name_'+id;
+        scrollName.innerHTML = `<option hidden disabled selected value>  </option>`;
+        for (let index = 0; index < tableHead.getNames().length; index++) {
+            const name = tableHead.getNames()[index];
+            const cap = tableHead.getCaptions()[index];
+            const element = document.createElement('option');
+            element.value = name;
+            element.text = cap;
+            scrollName.appendChild(element);
+        }
+        scrollName.style.width = '100px';
+        name.appendChild(scrollName);
+
+
+    const action = document.createElement('td');
+    newLine.appendChild(action);
+        const actionName = document.createElement('select');
+        actionName.id = "filter_action_"+id;
+        actionName.style.width = '100px';
+        actionName.innerHTML = `<option hidden="" disabled="" selected="" value="">  </option>`;
+        for (let index = 0; index < numberFilterParam.value.length; index++) {
+            const value = numberFilterParam.value[index];
+            const text = numberFilterParam.text[index];
+            const opt = document.createElement('option');
+            opt.value = value;
+            opt.text = text;
+            actionName.appendChild(opt);
+        } 
+        for (let index = 0; index < textFilterParam.value.length; index++) {
+            const value = textFilterParam.value[index];
+            const text = textFilterParam.text[index];
+            const opt = document.createElement('option');
+            opt.value = value;
+            opt.text = text;
+            actionName.appendChild(opt);
+        } 
+        for (let index = 0; index < boolFilterParam.value.length; index++) {
+            const value = boolFilterParam.value[index];
+            const text = boolFilterParam.text[index];
+            const opt = document.createElement('option');
+            opt.value = value;
+            opt.text = text;
+            actionName.appendChild(opt);
+        }             
+        actionName.addEventListener('change', changeFilterValueParam);
+        action.appendChild(actionName);
+
+    const value = document.createElement('td');
+    newLine.appendChild(value);
+        const valueName = document.createElement('input');
+        valueName.id = "filter_value_"+id;
+        valueName.type = 'text';
+        valueName.style.maxWidth = '100px';
+        value.appendChild(valueName);
+
+    return newLine;    
+}
+
+const removeSelectedFilters = (event) => {
+    let listRemoves = [];
+    const parent = document.getElementById('filter_list');
+    for (const p of parent.childNodes) {
+        const id = p.id.split("filter_line_")[1];
+        const chkb = document.getElementById("checkbox_"+id);
+        if (chkb.checked) {
+            listRemoves.push(p);
+        }
+    }
+
+    for (const e of listRemoves) {
+        parent.removeChild(e);
+    }
+};
+
+const setFilterButton = (event) => {
+    event.stopPropagation();
+    const parent = document.getElementById('filter_list');
+    const filters = filterTableList.get();
+    filters.clear();
+    for (const p of parent.childNodes) {
+        const id = p.id.split("filter_line_")[1];
+        const name = document.getElementById('filter_name_'+id);
+        const action = document.getElementById('filter_action_'+id);
+        const value = document.getElementById('filter_value_'+id);
+        filters.add(name.value, action.value, value.value);
+    }
+    closeModalForm(event);
+    loadTable();
+};
+
+const loadFilters = () => {
+   const filters = filterTableList.get();    
+   for (const f of filters.getAll()) {
+        const newL = addNewFilter();
+        const id = newL.id.split("filter_line_")[1];
+        const name = document.getElementById('filter_name_'+id);
+        name.value = f.name;
+        const action = document.getElementById('filter_action_'+id);
+        action.value = f.action;
+        setFilterNameParamByValue(id);
+        const value = document.getElementById('filter_value_'+id);
+        value.value = f.value;
+    }
+};
+
+const showFilter = (event) => {
+    const mainForm = makeModalForm();
+    document.body.appendChild(mainForm);
+    mainForm.classList.add('modal-panel-dialog');
+
+    const panel = document.createElement('div');
+    mainForm.appendChild(panel);
+    panel.className = 'filer-form';
+
+    const butClose = document.createElement('button');
+    panel.appendChild(butClose);
+    butClose.id = 'butCloseModal';
+    butClose.className = 'but-close-wrapper-modal';
+    butClose.innerHTML = 'x';
+    butClose.addEventListener('click', closeModalForm);
+
+    const cap = document.createElement('div');
+    cap.innerHTML = `<span><strong>Фільтрування<strong></span>`;
+    cap.style.marginBottom = '16px';
+    panel.appendChild(cap);
+
+    const filter = document.createElement('div');
+    panel.appendChild(filter);
+    filter.className = 'filter-tab-wrapper';
+    
+    const menuBut = document.createElement('div');
+    filter.appendChild(menuBut);
+    menuBut.className = 'filer-top-menu';
+        const butAdd = makeButtonFilter(menuBut, "filter_but_new", "Додати");
+        butAdd.style.marginRight = "10px";
+        butAdd.addEventListener('click', addNewFilter);
+        const butDel = makeButtonFilter(menuBut, "filter_but_del", "Видалити");
+        butDel.addEventListener('click', removeSelectedFilters);
+
+    const mainblock = document.createElement('div');
+    filter.appendChild(mainblock);
+    mainblock.className = 'filter-list-wrapper';
+    mainblock.innerHTML = `<table><thead><tr>
+    <td>Назва</td><td>Дія</td><td>Значення</td>
+    </tr></thead><tbody id = "filter_list"></tbody></table>`;
+
+    const bottomBut = document.createElement('div');
+    filter.appendChild(bottomBut);
+    bottomBut.className = 'filer-bottom-menu';
+        const butCancel = makeButtonFilter(bottomBut, "filter_but_cancel", "Закрити");
+        butCancel.style.marginRight = "10px";
+        butCancel.addEventListener('click', closeModalForm);
+        const butOk = makeButtonFilter(bottomBut, "filter_but_ok", "Застосувати");
+        butOk.addEventListener('click', setFilterButton);
+
+    loadFilters();    
+};
+
+const makeFastFilter = (event) => {
+    event.stopPropagation();
+    const elem = document.querySelector('.td-active');
+    if (elem === null) {
+        return;
+    }
+    const name = elem.getAttribute("tablename");
+    const value = elem.textContent;
+
+    let ok = false;
+
+    const filters = filterTableList.get();
+    filters.clearValue();
+    for (const f of filters.getAll()) {
+        if (f.name === name) {
+            f.action = "contains";
+            f.value = value;
+            ok = true;
+            break;
+        }
+    }    
+
+    if (!ok) {
+        filters.add(name, "contains", value);
+    }
+
+    loadTable();
+};
+
+const clearFilter = (event) => {
+    event.stopPropagation();
+    const filters = filterTableList.get();
+    filters.clear();
+    loadTable();
+};
+
+/*************************************************************** 
+****************************Filter******************************
+***************************************************************/
+
+
+
+loadStruct();
+
+window.addEventListener(`resize`, loadTable);
 document.getElementById('butRefresh').addEventListener('click', refreshTable);
 document.getElementById('pagination_left').addEventListener('click', decPage);
 document.getElementById('pagination_right').addEventListener('click', incPage);
 document.getElementById('pagination_input').addEventListener('keyup', inputChangePage);
 document.getElementById('pagination_input_but').addEventListener('click', inputChangePage);
+document.getElementById('filter_but').addEventListener('click', showFilter);
+document.getElementById('filter_fast_but').addEventListener('click', makeFastFilter);
+document.getElementById('filter_clear_but').addEventListener('click', clearFilter);

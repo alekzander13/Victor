@@ -11,7 +11,7 @@
 <body>
     <header class="header">
         <div id="current_section"> Назва активного розділу (+ системне меню)</div>
-        <button class="item_system_menu">Системне меню</button>
+        <button class="item-system-menu">Системне меню</button>
     </header>
     <main class="wrapper">
         <section class="main-sidebar">
@@ -22,8 +22,14 @@
                 <button class='toolbar-button' id="butRefresh">Оновити</button>
                 <button class='toolbar-button'>Додати</button>
                 <button class='toolbar-button'>Редагувати</button>
+                <div style="margin-left: 30px;">
+                    <button class='toolbar-button' id="filter_but">Фільтрувати</button>
+                    <button class='toolbar-button' id="filter_fast_but">Швидке ф</button>
+                    <button class='toolbar-button' id="filter_clear_but">Скинути ф</button>
+                    <button class='toolbar-button' id="filter_history_but">Історія ф</button>
+                </div>
             </div>
-            <div style="height: 100%;">
+            <div class="main-table-wrapper">
                 <table class='table-list' readonly=true id="tableBodyID">
 
                 </table>
