@@ -76,27 +76,26 @@ const getStyle = (el, styleProp) => {
 *****************************Struct*****************************
 ***************************************************************/
 class tableFilter {
-    constructor(name, caption) {
+    constructor(name) {
         this.name = name;
-        this.caption = caption;
         this.list = [];
     }
     getName() {
         return this.name;
     }
-    getCaption() {
-        return this.caption;
-    }
-    clearValue() {
+    clearChecked() {
         for (let index = 0; index < this.list.length; index++) {
-            this.list[index].value = '';
+            //this.list[index].value = '';
+            this.list[index].checked = false;
+            this.list[index].fast = false;
         }
     }
     clear() {
         this.list.splice(0, this.list.length);   
     }
-    add(name, action, value) {
-        this.list.push({name, action, value});
+    add(name, action, value, checked, fast) {
+        fast = (""+fast) === "true";
+        this.list.push({name, action, value, checked, fast});
     }
     getAll() {
         return this.list;
@@ -104,17 +103,12 @@ class tableFilter {
 }
 
 const filterTableList = {
-    list: [],
-    set(element) {
-        const newEl = new tableFilter(element.name, element.caption);
-        this.list.push(newEl);
+    list: tableFilter,
+    set(name) {
+       this.list = new tableFilter(name);
     },
     get() {
-        for (const el of this.list) {
-            if (el.getName() === activeTable) {
-                return el;
-            }
-        }
+       return this.list;
     }
 };
 
@@ -137,15 +131,26 @@ const boolFilterParam = {
 
 const filterDocumentID = {
     id : 0,
-    set() {
+    new() {
         return ++this.id;
     },
-    get() {
-        return this.id;
+    default() {
+        this.id = 0;
     }
 };
 
 let activeTable = "";
+
+let activeGridElement = "";
+const gridDocumentID = {
+    id : 0,
+    new() {
+        return ++this.id;
+    },
+    default() {
+        this.id = 0;
+    }
+};
 
 
 const tableHead = {
@@ -227,6 +232,7 @@ const sortObj = {
 
 //loadStruct - company struct loading at start
 const loadStruct = () => {
+    /*
     sendFetch("get", "/company", "", (response) => {
         //console.log(response);
         pageNum.set(1);
@@ -241,9 +247,15 @@ const loadStruct = () => {
         loadTable();
     },
     (error) => {alert(error + `\n Зверніться в службу технічної підтримки`);}); 
+    */
+    activeTable = document.getElementById('directory_name').textContent;
+    filterTableList.set(activeTable);
+    pageNum.set(1);
+    sortObj.set('', -1);
+    loadTable(true);
 };
 
-const loadTable = (event) => {
+const loadTable = (first = false) => {
     const obj = {};
     obj.table = activeTable;
     obj.countElement = getElementCountTable();
@@ -256,22 +268,23 @@ const loadTable = (event) => {
         obj.sortType = '';
     }
     obj.filters = [];
-    const filters = filterTableList.get();   
+    const filters = filterTableList.get();  
     for (const f of filters.getAll()) {
-        if (f.value !== '') {
-            obj.filters.push(f);
+        if (f.value !== '' && f.checked) {
+            const setF = {
+                name: f.name,
+                action: f.action, 
+                value: f.value
+            }
+            obj.filters.push(setF);
         }
     }
 
-    //console.log(obj);
+    console.log(obj);
 
     sendFetch("post", "/loadtable", JSON.stringify(obj), 
     (response) => {
-        //console.log(response);
-        if (response.table !== activeTable) {
-            //alert('wrong table');
-            //return;
-        }
+        console.log(response);
         const Table = document.getElementById('tableBodyID');
         if(response.items.length === obj.countElement) {
             Table.className = 'table-list';
@@ -281,7 +294,14 @@ const loadTable = (event) => {
         const cols = makeTableColGroup(response.tableHeadres);
         const headers = makeTableHead(response.tableHeadres);
         const body = createTableBody(response.items);
-        
+       
+        if (first) {
+            const filters = filterTableList.get();   
+            for (const el of tableHead.getCaptions()) {
+                filters.add(tableHead.getNameByCap(el), "contains", "", false, false);
+            }       
+        }
+
         makePaginate(response.page, response.countPage);
         Table.innerHTML = ``;
         Table.appendChild(cols);
@@ -339,6 +359,7 @@ const makeTableHead = (elements) => {
 
 const createTableBody = (elements) => {
     const tbody = document.createElement("tbody");
+    gridDocumentID.default();
     elements.forEach(element => {
         tbody.appendChild(createTableRow(element));
     });
@@ -352,6 +373,7 @@ const createTableRow = (elements) => {
     for (let i = 0; i < tableHeaders.length; i++) {
         const tableHeader = tableHeaders[i];
         const td = document.createElement('td');
+        td.id = "grid_id_"+gridDocumentID.new();
         if (tableHeader === "id") {
             td.className = 'table-list-td-id';
         } else {
@@ -359,24 +381,50 @@ const createTableRow = (elements) => {
         }
         td.classList.add('unselectable');
         td.classList.add('td-size');
-        let value = "";
-        let tableName = "";
-        for (const element of elements) {
-            if (element.headerName === tableHeader) {
-                value = element.value;
-                tableName = element.headerName;
-                continue
-            } 
+
+        if (td.id === activeGridElement) {
+            td.classList.add('td-active'); 
+            const fastFilterButton = document.getElementById('filter_fast_but');
+            const filters = filterTableList.get();
+            let ok = false;
+            for (const f of filters.getAll()) {
+                if (f.name === tableHeader) {
+                    ok = true;
+                    if (f.fast === true) {
+                        fastFilterButton.classList.add('active-fast-filter');  
+                    } else {
+                        fastFilterButton.classList.remove('active-fast-filter');  
+                    }
+                }
+            }
+            if (!ok) {
+                fastFilterButton.classList.remove('active-fast-filter');
+            }
         }
+        
+        let value = elements[tableHeader] === undefined ? "" : elements[tableHeader]
+
         td.title = value;
         td.innerText = value;
-        td.setAttribute('tableName', tableName);
+        td.setAttribute('tableName', tableHeader);
         td.onclick = (event) => {
             const actElem = event.target;
             const elements = document.querySelectorAll('.td-size');
+            const fastFilterButton = document.getElementById('filter_fast_but');
             for (const element of elements) {
                 if (element === actElem) {
+                    activeGridElement = event.target.id;
                     actElem.classList.add('td-active'); 
+                    const filters = filterTableList.get();
+                    for (const f of filters.getAll()) {
+                        if (f.name === tableHeader) {
+                            if (f.fast === true) {
+                                fastFilterButton.classList.add('active-fast-filter');  
+                            } else {
+                                fastFilterButton.classList.remove('active-fast-filter');  
+                            }
+                        }
+                    }
                 } else {
                     element.classList.remove('td-active');
                 }
@@ -468,12 +516,12 @@ const makePaginate = (actPage = 0, countPage = 0) => {
 
 const refreshTable = () => {
     //sortObj.set('', -1);
-    loadTable();
+    loadTable(false);
 };
 
 const changePage = event => {
     pageNum.set(+event.target.innerText);
-    loadTable();
+    loadTable(false);
 };
 
 const decPage = () => {
@@ -484,7 +532,7 @@ const decPage = () => {
     }
 
     pageNum.set(page);
-    loadTable();
+    loadTable(false);
 };
 
 const incPage = () => {
@@ -495,7 +543,7 @@ const incPage = () => {
     }
 
     pageNum.set(page);
-    loadTable();
+    loadTable(false);
 };
 
 const inputChangePage = (event) => {
@@ -511,7 +559,7 @@ const inputChangePage = (event) => {
         return;
     }
     pageNum.set(page);
-    loadTable();
+    loadTable(false);
     pagInput.value = '';
 };
 
@@ -551,7 +599,7 @@ const sort = event => {
             }
         }
     }
-    loadTable();
+    loadTable(false);
 };
 
 
@@ -608,6 +656,10 @@ const setFilterNameParamByValue = (id) => {
         const parent = value.parentNode;
         parent.innerHTML = `<input type="text" id="filter_value_${id}" style="max-width: 100px;"></input>`;
     }
+    document.getElementById("filter_value_"+id).addEventListener('change', (event) => {
+        const sid = event.target.id.split("filter_value_")[1];
+        document.getElementById("filter_checkbox_"+sid).checked = true;
+    });
 };
 
 const changeFilterValueParam = (event) => {
@@ -621,16 +673,24 @@ const addNewFilter = (event) => {
     const newLine = document.createElement('tr');
     parent.appendChild(newLine);
 
-    const id = filterDocumentID.set();
+    const id = filterDocumentID.new();
     
     newLine.id = 'filter_line_'+id;
 
+    const checkbox = document.createElement('td');
+    newLine.appendChild(checkbox);
+    const inp1 = document.createElement('input');
+        inp1.type = 'checkbox';
+        inp1.id = 'filter_checkbox_'+id;
+        checkbox.appendChild(inp1);
+        inp1.addEventListener('click', (event) => {
+            event.stopPropagation();
+            const sid = event.target.id.split("filter_checkbox_")[1];
+            document.getElementById('filter_line_'+sid).setAttribute("fast", false);
+        });
+
     const name = document.createElement('td');
     newLine.appendChild(name);
-        const inp1 = document.createElement('input');
-        inp1.type = 'checkbox';
-        inp1.id = 'checkbox_'+id;
-        name.appendChild(inp1);
         const scrollName = document.createElement('select');
         scrollName.id = 'filter_name_'+id;
         scrollName.innerHTML = `<option hidden disabled selected value>  </option>`;
@@ -686,24 +746,24 @@ const addNewFilter = (event) => {
         valueName.type = 'text';
         valueName.style.maxWidth = '100px';
         value.appendChild(valueName);
+    
+    const del = document.createElement('td');
+    newLine.appendChild(del);
+        const delBut = document.createElement('input');
+        delBut.id = "del_but_"+id;
+        delBut.type = "button";
+        delBut.value = "x";
+        delBut.addEventListener('click', removeCurrentFilters);
+        del.appendChild(delBut);
 
     return newLine;    
 }
 
-const removeSelectedFilters = (event) => {
-    let listRemoves = [];
-    const parent = document.getElementById('filter_list');
-    for (const p of parent.childNodes) {
-        const id = p.id.split("filter_line_")[1];
-        const chkb = document.getElementById("checkbox_"+id);
-        if (chkb.checked) {
-            listRemoves.push(p);
-        }
-    }
-
-    for (const e of listRemoves) {
-        parent.removeChild(e);
-    }
+const removeCurrentFilters = (event) => {
+    event.stopPropagation();
+    const id = event.target.id.split("del_but_")[1];
+    const parent = document.getElementById('filter_line_'+id);
+    parent.parentNode.removeChild(parent);
 };
 
 const setFilterButton = (event) => {
@@ -716,13 +776,16 @@ const setFilterButton = (event) => {
         const name = document.getElementById('filter_name_'+id);
         const action = document.getElementById('filter_action_'+id);
         const value = document.getElementById('filter_value_'+id);
-        filters.add(name.value, action.value, value.value);
+        const checkbox = document.getElementById('filter_checkbox_'+id);
+        const fast = document.getElementById('filter_line_'+id).getAttribute("fast");
+        filters.add(name.value, action.value, value.value, checkbox.checked, fast);
     }
     closeModalForm(event);
-    loadTable();
+    loadTable(false);
 };
 
 const loadFilters = () => {
+   filterDocumentID.default(); 
    const filters = filterTableList.get();    
    for (const f of filters.getAll()) {
         const newL = addNewFilter();
@@ -734,6 +797,9 @@ const loadFilters = () => {
         setFilterNameParamByValue(id);
         const value = document.getElementById('filter_value_'+id);
         value.value = f.value;
+        const checkbox = document.getElementById('filter_checkbox_'+id);
+        checkbox.checked = f.checked;
+        newL.setAttribute("fast", f.fast);
     }
 };
 
@@ -768,14 +834,12 @@ const showFilter = (event) => {
         const butAdd = makeButtonFilter(menuBut, "filter_but_new", "Додати");
         butAdd.style.marginRight = "10px";
         butAdd.addEventListener('click', addNewFilter);
-        const butDel = makeButtonFilter(menuBut, "filter_but_del", "Видалити");
-        butDel.addEventListener('click', removeSelectedFilters);
 
     const mainblock = document.createElement('div');
     filter.appendChild(mainblock);
     mainblock.className = 'filter-list-wrapper';
-    mainblock.innerHTML = `<table><thead><tr>
-    <td>Назва</td><td>Дія</td><td>Значення</td>
+    mainblock.innerHTML = `<table><thead><tr><td></td>
+    <td>Назва</td><td>Дія</td><td>Значення</td><td></td>
     </tr></thead><tbody id = "filter_list"></tbody></table>`;
 
     const bottomBut = document.createElement('div');
@@ -802,28 +866,34 @@ const makeFastFilter = (event) => {
     let ok = false;
 
     const filters = filterTableList.get();
-    filters.clearValue();
     for (const f of filters.getAll()) {
         if (f.name === name) {
-            f.action = "contains";
-            f.value = value;
+            if (f.fast) {
+                f.checked = false;
+                f.fast = false;
+            } else {
+                f.action = "contains";
+                f.value = value;
+                f.checked = true;
+                f.fast = true;
+            }
             ok = true;
             break;
         }
     }    
 
     if (!ok) {
-        filters.add(name, "contains", value);
+        filters.add(name, "contains", value, true, true);
     }
 
-    loadTable();
+    loadTable(false);
 };
 
 const clearFilter = (event) => {
     event.stopPropagation();
     const filters = filterTableList.get();
-    filters.clear();
-    loadTable();
+    filters.clearChecked();
+    loadTable(false);
 };
 
 /*************************************************************** 
@@ -831,10 +901,14 @@ const clearFilter = (event) => {
 ***************************************************************/
 
 
+const makeResize = (event) => {
+    event.stopPropagation();
+    loadTable();
+};
 
 loadStruct();
 
-window.addEventListener(`resize`, loadTable);
+window.addEventListener(`resize`, makeResize);
 document.getElementById('butRefresh').addEventListener('click', refreshTable);
 document.getElementById('pagination_left').addEventListener('click', decPage);
 document.getElementById('pagination_right').addEventListener('click', incPage);

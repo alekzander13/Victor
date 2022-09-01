@@ -1,3 +1,7 @@
+Назва таблиці лежить в html файлі:
+<div id="directory_name" style="display: none;">Контрагенти</div>
+
+
 Запит на отримання даних:
 	метод: "POST"
 	шлях: "/loadtable"

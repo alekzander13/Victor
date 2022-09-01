@@ -195,6 +195,9 @@ td{
 }
 
 
+.active-fast-filter {
+    border: 2px solid red;
+}
 /********************************
             FILTER BLOCK
 ********************************/
@@ -220,7 +223,7 @@ td{
 
 .filer-form {
     background: white;
-    width: 400px;
+    width: 450px;
     height: 450px;
     z-index: 1; 
     position: relative;
