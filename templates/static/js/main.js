@@ -232,22 +232,6 @@ const sortObj = {
 
 //loadStruct - company struct loading at start
 const loadStruct = () => {
-    /*
-    sendFetch("get", "/company", "", (response) => {
-        //console.log(response);
-        pageNum.set(1);
-        sortObj.set('', -1);
-        for (let index = 0; index < response.tables.length; index++) {
-            const element = response.tables[index];
-            filterTableList.set(element);
-            if (index === 0) {
-                activeTable = element.name; 
-            }
-        }
-        loadTable();
-    },
-    (error) => {alert(error + `\n Зверніться в службу технічної підтримки`);}); 
-    */
     activeTable = document.getElementById('directory_name').textContent;
     filterTableList.set(activeTable);
     pageNum.set(1);
@@ -280,11 +264,11 @@ const loadTable = (first = false) => {
         }
     }
 
-    console.log(obj);
+    //console.log(obj);
 
     sendFetch("post", "/loadtable", JSON.stringify(obj), 
     (response) => {
-        console.log(response);
+        //console.log(response);
         const Table = document.getElementById('tableBodyID');
         if(response.items.length === obj.countElement) {
             Table.className = 'table-list';
