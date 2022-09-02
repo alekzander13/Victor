@@ -41,6 +41,7 @@ const sendFetch = async (method, path, body, callback, returnerror) => {
 };
 /* jshint ignore:end */
 
+//getStyle - необхідний для пошуку розміру робочої області для розміщення таблиці
 const getStyle = (el, styleProp) => {
     let value, defaultView = (el.ownerDocument || document).defaultView;
     // W3C standard way:
@@ -153,6 +154,16 @@ const gridDocumentID = {
 };
 
 
+const gridHeadDocumentID = {
+    id : 0,
+    new() {
+        return ++this.id;
+    },
+    default() {
+        this.id = 0;
+    }
+};
+
 const tableHead = {
     names : [],
     captions : [],
@@ -264,7 +275,7 @@ const loadTable = (first = false) => {
         }
     }
 
-    //console.log(obj);
+    console.log(obj);
 
     sendFetch("post", "/loadtable", JSON.stringify(obj), 
     (response) => {
@@ -319,15 +330,46 @@ const makeTableHead = (elements) => {
     const tr = document.createElement("tr");
     tr.className = "table-list-tr";
     tableHead.clear();
+    gridHeadDocumentID.default();
     for (let index = 0; index < elements.length; index++) {
         const elem = elements[index];
         tableHead.add(elem.name, elem.caption);
-        const td = document.createElement("td");
+        const td = document.createElement('td');
+        const newID = gridHeadDocumentID.new();
+        td.id = "td_head_id_"+newID;
+        const tdDiv = document.createElement('div');
+        tdDiv.id = "td_head_wrapper_id_"+newID;
+        td.appendChild(tdDiv);
+        tdDiv.style.display = 'flex';
+        tdDiv.style.flexDirection = 'row';
+        tdDiv.style.justifyContent = 'space-between';
+        const tdCap = document.createElement('div');
+        tdCap.id = "td_head_cap_id_"+newID;
+        const tdFilter = document.createElement('div');
+        tdFilter.id = "td_head_filter_id_"+newID;
+
+        const filters = filterTableList.get();
+        let ok = false;
+        for (const f of filters.getAll()) {
+            if (f.name === elem.name) {
+                ok = f.checked;
+            }
+        }
+        if (!ok) {
+            tdFilter.style.display = 'none';    
+        }
+            const imgFilter = document.createElement('img');
+            imgFilter.src = 'static/img/filter-th.svg';
+            imgFilter.id = "td_head_filter_img_id_"+newID;
+            imgFilter.style.maxWidth = '12px';
+            tdFilter.appendChild(imgFilter);
+        tdDiv.appendChild(tdCap);
+        tdDiv.appendChild(tdFilter);
         td.className = "table-list-th-name";
-        td.innerHTML = `<span>${elem.caption}</span>`;
+        tdCap.innerHTML = `<span id="td_head_cap_span_id_${newID}">${elem.caption}</span>`;
         if (sortObj.getName() === elem.name) {
             td.setAttribute('sort', sortObj.getTypeNum());
-            td.appendChild(makeArrowSort(sortObj.getTypeNum()));
+            tdCap.appendChild(makeArrowSort(sortObj.getTypeNum(), newID));
         }
         if (index == 0) {
             td.className = "table-list-th-id";
@@ -547,8 +589,9 @@ const inputChangePage = (event) => {
     pagInput.value = '';
 };
 
-const makeArrowSort = (num) => {
+const makeArrowSort = (num, id) => {
     const d = document.createElement('span');
+    d.id = "sort_arrow_id_"+id;
     d.innerHTML = `&uarr;`;
     if (num === 0) {
         d.innerHTML = `&darr;`;  
@@ -556,30 +599,62 @@ const makeArrowSort = (num) => {
     return d;
 };
 
+const getIDHeadGridElement = (id = "") => {
+    if(id.includes("sort_arrow_id_")) {
+        return id.split("sort_arrow_id_")[1];
+    }
+    if(id.includes("td_head_id_")) {
+        return id.split("td_head_id_")[1];
+    }
+    if(id.includes("td_head_wrapper_id_")) {
+        return id.split("td_head_wrapper_id_")[1];
+    }
+    if(id.includes("td_head_cap_id_")) {
+        return id.split("td_head_cap_id_")[1];
+    }
+    if(id.includes("td_head_filter_id_")) {
+        return id.split("td_head_filter_id_")[1];
+    }
+    if(id.includes("td_head_filter_img_id_")) {
+        return id.split("td_head_filter_img_id_")[1];
+    }
+    if(id.includes("td_head_cap_span_id_")) {
+        return id.split("td_head_cap_span_id_")[1];
+    }
+    return -1;
+};
+
 const sort = event => {
     const thead = document.getElementById('thead_id');
     for (let i = 0; i < thead.childNodes[0].childNodes.length; i++) {
         const element = thead.childNodes[0].childNodes[i];
-        if (element === event.target || element === event.target.parentNode) {
+        if (getIDHeadGridElement(event.target.id) === getIDHeadGridElement(element.id)) {
+            const id = +getIDHeadGridElement(element.id);
+            const name = document.getElementById('td_head_cap_span_id_'+id);
+            const parent = document.getElementById('td_head_cap_id_'+id);
             if (element.hasAttribute('sort')) {
+                const arrow = document.getElementById('sort_arrow_id_'+id);
                 if (+element.getAttribute('sort') === 0) {
                     element.setAttribute('sort', 1); 
-                    element.removeChild(element.childNodes[1]);
-                    element.appendChild(makeArrowSort(1));
+                    parent.removeChild(arrow);
+                    parent.appendChild(makeArrowSort(1, id));
                 } else {
                     element.setAttribute('sort', 0);
-                    element.removeChild(element.childNodes[1]);
-                    element.appendChild(makeArrowSort(0));
+                    parent.removeChild(arrow);
+                    parent.appendChild(makeArrowSort(0, id));
                 }
             } else {
                 element.setAttribute('sort', 0);
-                element.appendChild(makeArrowSort(0));
+                parent.appendChild(makeArrowSort(0, id));
             }
-            sortObj.set(tableHead.getNameByCap(element.childNodes[0].innerText), +element.getAttribute('sort'));
+            sortObj.set(tableHead.getNameByCap(name.textContent), +element.getAttribute('sort'));
         } else {
-            element.removeAttribute('sort');
-            if (element.childNodes.length > 1) {
-                element.removeChild(element.childNodes[1]); 
+            if (element.getAttribute('sort') !== null) {
+                const id = +getIDHeadGridElement(element.id);
+                const arrow = document.getElementById('sort_arrow_id_'+id);
+                const parent = arrow.parentNode; 
+                parent.removeChild(arrow);
+                element.removeAttribute('sort');
             }
         }
     }
@@ -760,9 +835,15 @@ const setFilterButton = (event) => {
         const name = document.getElementById('filter_name_'+id);
         const action = document.getElementById('filter_action_'+id);
         const value = document.getElementById('filter_value_'+id);
-        const checkbox = document.getElementById('filter_checkbox_'+id);
+        let checkbox;
+        if (value.value !== '') {
+            checkbox = true; 
+        } else {
+            checkbox = false;
+        }
+        //const checkbox = document.getElementById('filter_checkbox_'+id);
         const fast = document.getElementById('filter_line_'+id).getAttribute("fast");
-        filters.add(name.value, action.value, value.value, checkbox.checked, fast);
+        filters.add(name.value, action.value, value.value, checkbox/*.checked*/, fast);
     }
     closeModalForm(event);
     loadTable(false);
