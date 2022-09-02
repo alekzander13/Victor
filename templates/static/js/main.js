@@ -701,9 +701,13 @@ const setFilterNameParamByValue = (id) => {
     const name = document.getElementById("filter_name_"+id);
     const action = document.getElementById("filter_action_"+id);
     const value = document.getElementById("filter_value_"+id);
+    let saveValue = value.value;
     if (numberFilterParam.value.includes(action.value)) {
         const parent = value.parentNode;
-        parent.innerHTML = `<input type="number" id="filter_value_${id}" style="max-width: 100px;"></input>`;
+        if (Number.isNaN(+saveValue)) {
+            saveValue = 0; 
+        } 
+        parent.innerHTML = `<input type="number" id="filter_value_${id}" style="max-width: 100px;" value = "${+saveValue}"></input>`;
     } else if (boolFilterParam.value.includes(action.value)) {
         const parent = value.parentNode;
         parent.innerHTML = `<select id = "filter_value_${id}">
@@ -713,7 +717,7 @@ const setFilterNameParamByValue = (id) => {
         </select>`; 
     } else {
         const parent = value.parentNode;
-        parent.innerHTML = `<input type="text" id="filter_value_${id}" style="max-width: 100px;"></input>`;
+        parent.innerHTML = `<input type="text" id="filter_value_${id}" style="max-width: 100px;" value = "${saveValue}"></input>`;
     }
     document.getElementById("filter_value_"+id).addEventListener('change', (event) => {
         const sid = event.target.id.split("filter_value_")[1];
