@@ -473,6 +473,7 @@ const getElementCountTable = () => {
     const elementHeight = Number.parseInt(getStyle(document.querySelector('.table-list-tr'), 'height'));
     Table.removeChild(tempEl);
     Table.innerHTML = saveTable;
+    Table.classList.remove('table-list');
     return Math.floor((workHeight-elementHeight)/elementHeight);
 };
 
