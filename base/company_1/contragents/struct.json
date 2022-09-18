@@ -1,0 +1,18 @@
+[
+    {
+        "Name":    "id",
+        "Caption": "ID"
+    },
+    {
+        "Name":    "name",
+        "Caption": "Найменування"
+    },
+    {
+        "Name":    "pos",
+        "Caption": "Позиція"
+    },
+    {
+        "Name":    "adress",
+        "Caption": "Адреса"
+    }
+]
