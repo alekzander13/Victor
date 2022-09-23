@@ -12,6 +12,7 @@ type requestData struct {
 type tableHeader struct {
 	Name    string `json:"name"`
 	Caption string `json:"caption"`
+	Type    string `json:"type"`
 }
 
 type typesElement struct {

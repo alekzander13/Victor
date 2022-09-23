@@ -1,18 +1,22 @@
 [
     {
         "Name":    "id",
-        "Caption": "ID"
+        "Caption": "ID",
+        "Type": "string"
     },
     {
         "Name":    "name",
-        "Caption": "Найменування"
+        "Caption": "Найменування",
+        "Type": "string"
     },
     {
         "Name":    "lat",
-        "Caption": "Широта"
+        "Caption": "Широта",
+        "Type": "number"
     },
     {
         "Name":    "lng",
-        "Caption": "Довгота"
+        "Caption": "Довгота",
+        "Type": "number"
     }
 ]

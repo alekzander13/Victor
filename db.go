@@ -60,6 +60,23 @@ func (db *database) setTableContragentsData(data []dataItemContragents) error {
 	return nil
 }
 
+func (db *database) getTablePosStruct() ([]tableHeader, error) {
+	defer db.mu.RUnlock()
+	db.mu.RLock()
+	var res []tableHeader
+	b, err := os.ReadFile("base/pos_struct.json")
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(b, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
 func (db *database) getTablePosData() ([]dataItemPos, error) {
 	defer db.mu.RUnlock()
 	db.mu.RLock()
@@ -77,19 +94,16 @@ func (db *database) getTablePosData() ([]dataItemPos, error) {
 	return res, nil
 }
 
-func (db *database) getTablePosStruct() ([]tableHeader, error) {
-	defer db.mu.RUnlock()
-	db.mu.RLock()
-	var res []tableHeader
-	b, err := os.ReadFile("base/pos_struct.json")
+func (db *database) setTablePosData(data []dataItemPos) error {
+	defer db.mu.Unlock()
+	db.mu.Lock()
+
+	body, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	err = json.Unmarshal(b, &res)
-	if err != nil {
-		return nil, err
-	}
+	os.WriteFile("base/pos.json", body, os.ModePerm)
 
-	return res, nil
+	return nil
 }

@@ -29,7 +29,7 @@ func ElementEditHandle(w http.ResponseWriter, r *http.Request) {
 	case "contragents":
 		err = editContragents(body)
 	case "pos":
-
+		err = editPos(body)
 	}
 
 	if err != nil {
@@ -48,7 +48,30 @@ func editPos(body []byte) error {
 		return err
 	}
 
-	return nil
+	data, err := myBase.getTablePosData()
+	if err != nil {
+		return err
+	}
+
+	if obj.ID == "0" {
+		rand.Seed(time.Now().UnixNano())
+		min := 1200
+		max := 9000
+		obj.ID = fmt.Sprintf("%d", rand.Intn(max-min+1)+min)
+		data = append(data, obj)
+	} else {
+		for i, d := range data {
+			if d.ID == obj.ID {
+				d.Lat = obj.Lat
+				d.Lng = obj.Lng
+				d.Name = obj.Name
+
+				data[i] = d
+			}
+		}
+	}
+
+	return myBase.setTablePosData(data)
 }
 
 func editContragents(body []byte) error {

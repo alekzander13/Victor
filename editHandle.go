@@ -56,7 +56,7 @@ func tableContragents(id string) ([]typesElement, error) {
 		newEl := typesElement{
 			Name:    v.Name,
 			Caption: v.Caption,
-			Type:    "string",
+			Type:    v.Type,
 			Show:    true,
 			Many:    false,
 		}
@@ -64,9 +64,7 @@ func tableContragents(id string) ([]typesElement, error) {
 			newEl.Show = false
 			newEl.Value = "0"
 		}
-		if v.Name == "pos" {
-			newEl.Type = "relation"
-		}
+
 		res = append(res, newEl)
 	}
 
@@ -112,7 +110,7 @@ func tablePos(id string) ([]typesElement, error) {
 		newEl := typesElement{
 			Name:    v.Name,
 			Caption: v.Caption,
-			Type:    "string",
+			Type:    v.Type,
 			Show:    true,
 			Many:    false,
 		}

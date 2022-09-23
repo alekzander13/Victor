@@ -1145,6 +1145,7 @@ const closeModalFormEditor = (event) => {
             zIndexDec();
             if (listPanel.length === 0) {
                 document.removeEventListener('keyup', closeModalFormEditor);
+                loadTable(false);
             }
     }
 };
@@ -1271,35 +1272,35 @@ const makeNumberElementPanel = (parent = HTMLDivElement, obj = {}) => {
     edit.value = obj.value === undefined ? "" : obj.value;
 };
 
-const makeRelationElementPanel = (parent = HTMLDivElement, obj = {}) => {
+const makeRelationElementPanel = (parent = HTMLDivElement, objIn = {}) => {
     //console.log(obj);
     const main = document.createElement('div');
     parent.appendChild(main);
 
-    if (!obj.show) {
+    if (!objIn.show) {
         main.style.display = "none";
     }
 
     const cap = document.createElement('div');
     main.appendChild(cap);
-    cap.innerHTML = `<span>${obj.caption}</span>`;
+    cap.innerHTML = `<span>${objIn.caption}</span>`;
 
     const wrapper = document.createElement('div');
     main.appendChild(wrapper);
         const edit = document.createElement('input');
         wrapper.appendChild(edit);
-        edit.setAttribute("name", obj.name);
+        edit.setAttribute("name", objIn.name);
         edit.classList.add('edit-input-element-'+zIndex);
         edit.readOnly = true
-        edit.value = obj.value === undefined ? "" : obj.value;
-        edit.setAttribute('objid', obj.id);
+        edit.value = objIn.value === undefined ? "" : objIn.value;
+        edit.setAttribute('objid', objIn.id);
         const butChk = document.createElement('button');
         butChk.innerHTML = `...`;
         wrapper.appendChild(butChk);
         butChk.onclick = (event) => {
-            sendFetch("post", "/elementlist", JSON.stringify({table: activeTable, name: obj.name}), (response) => {
+            sendFetch("post", "/elementlist", JSON.stringify({table: activeTable, name: objIn.name}), (response) => {
                 //console.log(response);
-                buildDialogPanelEditor(obj.caption, "grid", response, ()=>{
+                buildDialogPanelEditor(objIn.caption, "grid", response, ()=>{
                     const actEl = document.querySelector('.tr-active-edit');
                     if (actEl) {
                         const row = actEl.parentNode;
@@ -1319,22 +1320,27 @@ const makeRelationElementPanel = (parent = HTMLDivElement, obj = {}) => {
             if (objID === "") {
                 return;
             }
-            sendFetch("get", "/element?table=pos&id="+objID, null, (response) => {
+            sendFetch("get", "/element?table="+objIn.name+"&id="+objID, null, (response) => {
                 console.log(response);
                 buildDialogPanelEditor("Редагування елементу", "object", response, (event) => {
                     let list = document.querySelectorAll('.edit-input-element-'+zIndex);
                     const obj = {};
                     for (const el of list) {
                         const key = el.getAttribute('name');
-                        const value = el.getAttribute('objid') ? el.getAttribute('objid') : el.value;
+                        let value = el.getAttribute('objid') ? el.getAttribute('objid') : el.value;
+                        if (el.getAttribute('type') === "number") {
+                            if (!Number.isNaN(Number(value))) {
+                                value = Number(value);
+                            }
+                        }
                         obj[key] = value;
                     }
-                    sendFetch("post", "/elementedit?table=pos", JSON.stringify(obj), (response) => {
+                    sendFetch("post", "/elementedit?table="+objIn.name, JSON.stringify(obj), (response) => {
                         if (response.result !== "ok") {
                             alert(response.result);
                         }
-
-                        
+                        edit.value = obj.name;
+                        edit.setAttribute('objid', obj.id);                       
                     },
                     (error) => {alert(error + `\n       
                     Зверніться в службу технічної підтримки`);});
