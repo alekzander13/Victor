@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
 
@@ -12,47 +11,45 @@ func ElementHandle(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	w.Header().Set("Cache-Control", "no-store")
 
-	if r.Method != "POST" {
+	if r.Method != "GET" {
 		http.Error(w, "bad request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	var el editElement
-	err = json.Unmarshal(body, &el)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if el.Relation == "pos" {
-		res, err := realtionPos(el.ID)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		b, err := json.Marshal(res)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Write(b)
-		return
-	}
+	var table, id string = r.FormValue("table"), r.FormValue("id")
 
 	var res []typesElement
+	var err error
 
-	tableStruct, err := myBase.getTableStruct()
+	switch table {
+	case "contragents":
+		res, err = tableContragents(id)
+
+	case "pos":
+		res, err = tablePos(id)
+
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	b, err := json.Marshal(res)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(b)
+}
+
+func tableContragents(id string) ([]typesElement, error) {
+	var res []typesElement
+
+	tableStruct, err := myBase.getTableContragentsStruct()
+	if err != nil {
+		return nil, err
 	}
 
 	for _, v := range tableStruct {
@@ -73,21 +70,19 @@ func ElementHandle(w http.ResponseWriter, r *http.Request) {
 		res = append(res, newEl)
 	}
 
-	if el.ID != "0" {
-		dataList, err := myBase.getTableData()
+	if id != "0" {
+		dataList, err := myBase.getTableContragentsData()
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+			return nil, err
 		}
 		for _, v := range dataList {
-			if el.ID == v.ID {
+			if id == v.ID {
 				for i, r := range res {
 					if res[i].Type == "relation" {
 						val := fmt.Sprintf("%v", checkJSONTagName(v, r.Name))
-						spos, err := myBase.getListTablePos()
+						spos, err := myBase.getTablePosData()
 						if err != nil {
-							http.Error(w, err.Error(), http.StatusInternalServerError)
-							return
+							return nil, err
 						}
 						for _, v := range spos {
 							if v.ID == val {
@@ -104,16 +99,10 @@ func ElementHandle(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	b, err := json.Marshal(res)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Write(b)
+	return res, nil
 }
 
-func realtionPos(id string) ([]typesElement, error) {
+func tablePos(id string) ([]typesElement, error) {
 	var res []typesElement
 	tableStruct, err := myBase.getTablePosStruct()
 	if err != nil {
@@ -135,7 +124,7 @@ func realtionPos(id string) ([]typesElement, error) {
 	}
 
 	if id != "0" {
-		dataList, err := myBase.getListTablePos()
+		dataList, err := myBase.getTablePosData()
 		if err != nil {
 			return nil, err
 		}

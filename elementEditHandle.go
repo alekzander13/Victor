@@ -25,18 +25,43 @@ func ElementEditHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var obj dataItem
+	switch r.FormValue("table") {
+	case "contragents":
+		err = editContragents(body)
+	case "pos":
 
-	err = json.Unmarshal(body, &obj)
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	data, err := myBase.getTableData()
+	w.Write([]byte(`{"result":"ok"}`))
+}
+
+func editPos(body []byte) error {
+	var obj dataItemPos
+
+	err := json.Unmarshal(body, &obj)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
+	}
+
+	return nil
+}
+
+func editContragents(body []byte) error {
+	var obj dataItemContragents
+
+	err := json.Unmarshal(body, &obj)
+	if err != nil {
+		return err
+	}
+
+	data, err := myBase.getTableContragentsData()
+	if err != nil {
+		return err
 	}
 
 	if obj.ID == "0" {
@@ -57,11 +82,5 @@ func ElementEditHandle(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	err = myBase.setTableData(data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Write([]byte(`{"result":"ok"}`))
+	return myBase.setTableContragentsData(data)
 }

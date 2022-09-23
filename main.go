@@ -34,9 +34,6 @@ func main() {
 		IdleTimeout:  120 * time.Second,
 	}
 
-	myBase.setCompany("company_1")
-	myBase.setTable("contragents")
-
 	log.Printf("web server start on %s\n", port)
 	if err := srv.ListenAndServe(); err != nil {
 		log.Fatal(err)

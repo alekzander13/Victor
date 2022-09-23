@@ -37,7 +37,7 @@ func ElementListHandle(w http.ResponseWriter, r *http.Request) {
 
 	switch obj.Name {
 	case "pos":
-		rList, err := myBase.getListTablePos()
+		rList, err := myBase.getTablePosData()
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

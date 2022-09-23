@@ -1,25 +1,5 @@
 package main
 
-type mainResponse struct {
-	Table      string       `json:"table"`
-	Fields     []headerItem `json:"tableHeaders"`
-	Page       int          `json:"page"`
-	CountPages int          `json:"countPage"`
-	Elements   []dataItem   `json:"items"`
-}
-
-type headerItem struct {
-	Name    string `json:"name"`
-	Caption string `json:"caption"`
-}
-
-type dataItem struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	Pos    string `json:"pos"`
-	Adress string `json:"adress"`
-}
-
 type requestData struct {
 	Table       string `json:"table"`
 	CountOnPage int    `json:"countElement"`
@@ -27,6 +7,11 @@ type requestData struct {
 	SortName    string `json:"sort"`
 	SortType    string `json:"sortType"`
 	//FilterName  string `json:"filters"`
+}
+
+type tableHeader struct {
+	Name    string `json:"name"`
+	Caption string `json:"caption"`
 }
 
 type typesElement struct {
@@ -39,19 +24,28 @@ type typesElement struct {
 	Many    bool   `json:"many"`
 }
 
-type editElement struct {
-	Table    string `json:"table"`
-	Relation string `json:"relation"`
-	ID       string `json:"id"`
+type mainResponseContragents struct {
+	Table      string                `json:"table"`
+	Fields     []tableHeader         `json:"tableHeaders"`
+	Page       int                   `json:"page"`
+	CountPages int                   `json:"countPage"`
+	Elements   []dataItemContragents `json:"items"`
+}
+
+type dataItemContragents struct {
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Pos    string `json:"pos"`
+	Adress string `json:"adress"`
 }
 
 type posResponse struct {
-	Table    string       `json:"table"`
-	Fields   []headerItem `json:"tableHeaders"`
-	Elements []elementPos `json:"items"`
+	Table    string        `json:"table"`
+	Fields   []tableHeader `json:"tableHeaders"`
+	Elements []dataItemPos `json:"items"`
 }
 
-type elementPos struct {
+type dataItemPos struct {
 	ID   string  `json:"id"`
 	Name string  `json:"name"`
 	Lat  float64 `json:"lat"`

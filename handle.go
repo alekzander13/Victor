@@ -34,19 +34,19 @@ func LoadTableHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var res mainResponse
-	var tests []dataItem
+	var res mainResponseContragents
+	var tests []dataItemContragents
 
-	tests, err = myBase.getTableData()
+	tests, err = myBase.getTableContragentsData()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	if z.SortName != "" {
-		var tempT []dataItem
+		var tempT []dataItemContragents
 		var IDs []int
-		mmap := make(map[int]dataItem)
+		mmap := make(map[int]dataItemContragents)
 		for _, v := range tests {
 			id, err := strconv.Atoi(v.ID)
 			if err != nil {
@@ -55,22 +55,23 @@ func LoadTableHandle(w http.ResponseWriter, r *http.Request) {
 			mmap[id] = v
 			IDs = append(IDs, id)
 		}
-		sort.Slice(IDs, func(i, j int) bool {
-			if z.SortType == "toincrease" {
-				return i < j
+		sort.Ints(IDs)
+		if z.SortType == "toincrease" {
+			for _, id := range IDs {
+				tempT = append(tempT, mmap[id])
 			}
-			return i >= j
-		})
-
-		for _, id := range IDs {
-			tempT = append(tempT, mmap[id])
+		} else {
+			for i := len(IDs) - 1; i >= 0; i-- {
+				tempT = append(tempT, mmap[IDs[i]])
+			}
 		}
+
 		tests = tempT
 	}
 
 	res.Table = "Контрагенти"
 
-	res.Fields, err = myBase.getTableStruct()
+	res.Fields, err = myBase.getTableContragentsStruct()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -80,7 +81,7 @@ func LoadTableHandle(w http.ResponseWriter, r *http.Request) {
 
 	res.CountPages = 30
 
-	spos, err := myBase.getListTablePos()
+	spos, err := myBase.getTablePosData()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

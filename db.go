@@ -7,30 +7,16 @@ import (
 )
 
 type database struct {
-	mu        sync.RWMutex
-	compName  string
-	tableName string
+	mu sync.RWMutex
 }
 
 var myBase database
 
-func (db *database) setCompany(name string) {
-	defer db.mu.Unlock()
-	db.mu.Lock()
-	db.compName = name
-}
-
-func (db *database) setTable(name string) {
-	defer db.mu.Unlock()
-	db.mu.Lock()
-	db.tableName = name
-}
-
-func (db *database) getTableStruct() ([]headerItem, error) {
+func (db *database) getTableContragentsStruct() ([]tableHeader, error) {
 	defer db.mu.RUnlock()
 	db.mu.RLock()
-	var res []headerItem
-	b, err := os.ReadFile("base/" + db.compName + "/" + db.tableName + "/struct.json")
+	var res []tableHeader
+	b, err := os.ReadFile("base/contragents_struct.json")
 	if err != nil {
 		return nil, err
 	}
@@ -43,11 +29,11 @@ func (db *database) getTableStruct() ([]headerItem, error) {
 	return res, nil
 }
 
-func (db *database) getTableData() ([]dataItem, error) {
+func (db *database) getTableContragentsData() ([]dataItemContragents, error) {
 	defer db.mu.RUnlock()
 	db.mu.RLock()
-	var res []dataItem
-	b, err := os.ReadFile("base/" + db.compName + "/" + db.tableName + "/data.json")
+	var res []dataItemContragents
+	b, err := os.ReadFile("base/contragents.json")
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +46,7 @@ func (db *database) getTableData() ([]dataItem, error) {
 	return res, nil
 }
 
-func (db *database) setTableData(data []dataItem) error {
+func (db *database) setTableContragentsData(data []dataItemContragents) error {
 	defer db.mu.Unlock()
 	db.mu.Lock()
 
@@ -69,16 +55,16 @@ func (db *database) setTableData(data []dataItem) error {
 		return err
 	}
 
-	os.WriteFile("base/"+db.compName+"/"+db.tableName+"/data.json", body, os.ModePerm)
+	os.WriteFile("base/contragents.json", body, os.ModePerm)
 
 	return nil
 }
 
-func (db *database) getListTablePos() ([]elementPos, error) {
+func (db *database) getTablePosData() ([]dataItemPos, error) {
 	defer db.mu.RUnlock()
 	db.mu.RLock()
-	var res []elementPos
-	b, err := os.ReadFile("base/" + db.compName + "/" + db.tableName + "/pos.json")
+	var res []dataItemPos
+	b, err := os.ReadFile("base/pos.json")
 	if err != nil {
 		return nil, err
 	}
@@ -91,11 +77,11 @@ func (db *database) getListTablePos() ([]elementPos, error) {
 	return res, nil
 }
 
-func (db *database) getTablePosStruct() ([]headerItem, error) {
+func (db *database) getTablePosStruct() ([]tableHeader, error) {
 	defer db.mu.RUnlock()
 	db.mu.RLock()
-	var res []headerItem
-	b, err := os.ReadFile("base/" + db.compName + "/" + db.tableName + "/pos_struct.json")
+	var res []tableHeader
+	b, err := os.ReadFile("base/pos_struct.json")
 	if err != nil {
 		return nil, err
 	}

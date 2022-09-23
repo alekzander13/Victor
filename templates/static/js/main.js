@@ -1000,7 +1000,7 @@ const clearFilter = (event) => {
 ***************************************************************/
 
 const newData = () => {
-    sendFetch("post", "/element", JSON.stringify({table: activeTable, id: "0"}), (response) => {
+    sendFetch("post", "/element?table="+activeTable+"&id=0", null, (response) => {
         //console.log(response);
         buildDialogPanelEditor("Створення нового елементу", "object", response, (event) => {
             let list = document.querySelectorAll('.edit-input-element-'+zIndex);
@@ -1010,8 +1010,10 @@ const newData = () => {
                 const value = el.getAttribute('objid') ? el.getAttribute('objid') : el.value;
                 obj[key] = value;
             }
-            sendFetch("post", "/elementedit", JSON.stringify(obj), (response) => {
-                console.log(response);
+            sendFetch("post", "/elementedit?table="+activeTable, JSON.stringify(obj), (response) => {
+                if (response.result !== "ok") {
+                    alert(response.result);
+                }
                 loadTable(false);
             },
             (error) => {alert(error + `\n       
@@ -1031,7 +1033,7 @@ const editData = () => {
 
     for (const it of actRow.childNodes) {
         if (it.getAttribute("tablename") === "id") {
-            sendFetch("post", "/element", JSON.stringify({table: activeTable, id: it.title}), (response) => {
+            sendFetch("get", "/element?table="+activeTable+"&id="+it.title, null, (response) => {
                 //console.log(response);
                 buildDialogPanelEditor("Редагування елементу", "object", response, (event) => {
                     let list = document.querySelectorAll('.edit-input-element-'+zIndex);
@@ -1041,8 +1043,10 @@ const editData = () => {
                         const value = el.getAttribute('objid') ? el.getAttribute('objid') : el.value;
                         obj[key] = value;
                     }
-                    sendFetch("post", "/elementedit", JSON.stringify(obj), (response) => {
-                        console.log(response);
+                    sendFetch("post", "/elementedit?table="+activeTable, JSON.stringify(obj), (response) => {
+                        if (response.result !== "ok") {
+                            alert(response.result);
+                        }
                         loadTable(false);
                     },
                     (error) => {alert(error + `\n       
@@ -1315,11 +1319,7 @@ const makeRelationElementPanel = (parent = HTMLDivElement, obj = {}) => {
             if (objID === "") {
                 return;
             }
-            const obj = {};
-            obj["id"] = objID;
-            obj["table"] = activeTable;
-            obj["relation"] = "pos";
-            sendFetch("post", "/element", JSON.stringify(obj), (response) => {
+            sendFetch("get", "/element?table=pos&id="+objID, null, (response) => {
                 console.log(response);
                 buildDialogPanelEditor("Редагування елементу", "object", response, (event) => {
                     let list = document.querySelectorAll('.edit-input-element-'+zIndex);
@@ -1329,9 +1329,12 @@ const makeRelationElementPanel = (parent = HTMLDivElement, obj = {}) => {
                         const value = el.getAttribute('objid') ? el.getAttribute('objid') : el.value;
                         obj[key] = value;
                     }
-                    sendFetch("post", "/elementedit", JSON.stringify(obj), (response) => {
-                        console.log(response);
-                        loadTable(false);
+                    sendFetch("post", "/elementedit?table=pos", JSON.stringify(obj), (response) => {
+                        if (response.result !== "ok") {
+                            alert(response.result);
+                        }
+
+                        
                     },
                     (error) => {alert(error + `\n       
                     Зверніться в службу технічної підтримки`);});
