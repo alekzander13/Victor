@@ -286,8 +286,8 @@ const loadTable = (first = false) => {
         } else {
             Table.classList.remove('table-list');
         }
-        const cols = makeTableColGroup(response.tableHeadres);
-        const headers = makeTableHead(response.tableHeadres);
+        const cols = makeTableColGroup(response.tableHeaders);
+        const headers = makeTableHead(response.tableHeaders);
         const body = createTableBody(response.items);
        
         if (first) {
@@ -393,6 +393,7 @@ const createTableBody = (elements) => {
 };
 
 const createTableRow = (elements) => {
+    let actRow = false;
     const newRow = document.createElement('tr');
     newRow.className = 'table-list-tr';
     const tableHeaders = tableHead.getNames();
@@ -409,6 +410,7 @@ const createTableRow = (elements) => {
         td.classList.add('td-size');
 
         if (td.id === activeGridElement) {
+            actRow = true;
             td.classList.add('td-active'); 
             const fastFilterButton = document.getElementById('filter_fast_but');
             const filters = filterTableList.get();
@@ -441,6 +443,12 @@ const createTableRow = (elements) => {
                 if (element === actElem) {
                     activeGridElement = event.target.id;
                     actElem.classList.add('td-active'); 
+                    for (const it of actElem.parentNode.childNodes) {
+                        if (it !== actElem) {
+                            it.classList.add('tr-active'); 
+                        }
+                    }
+
                     const filters = filterTableList.get();
                     for (const f of filters.getAll()) {
                         if (f.name === tableHeader) {
@@ -453,11 +461,28 @@ const createTableRow = (elements) => {
                     }
                 } else {
                     element.classList.remove('td-active');
+
+                    if (!element.parentNode.contains(actElem)) {
+                        for (const it of element.parentNode.childNodes) {
+                            it.classList.remove('tr-active'); 
+                        }
+                    } else {
+                        actElem.classList.remove('tr-active');
+                    }
                 }
             }
         };
         newRow.appendChild(td);
     }
+
+    if (actRow) {
+        for (const it of newRow.childNodes) {
+            if (it.id !== activeGridElement) {
+                it.classList.add('tr-active'); 
+            }
+        }
+    }
+
     return newRow;
 };
 
@@ -970,16 +995,383 @@ const clearFilter = (event) => {
 ****************************Filter******************************
 ***************************************************************/
 
+/*************************************************************** 
+****************************Editor******************************
+***************************************************************/
+
+const newData = () => {
+    sendFetch("post", "/element", JSON.stringify({table: activeTable, id: "0"}), (response) => {
+        //console.log(response);
+        buildDialogPanelEditor("Створення нового елементу", "object", response, (event) => {
+            let list = document.querySelectorAll('.edit-input-element-'+zIndex);
+            const obj = {};
+            for (const el of list) {
+                const key = el.getAttribute('name');
+                const value = el.getAttribute('objid') ? el.getAttribute('objid') : el.value;
+                obj[key] = value;
+            }
+            sendFetch("post", "/elementedit", JSON.stringify(obj), (response) => {
+                console.log(response);
+                loadTable(false);
+            },
+            (error) => {alert(error + `\n       
+            Зверніться в службу технічної підтримки`);});
+        });
+    },
+    (error) => {alert(error + `\n       
+    Зверніться в службу технічної підтримки`);});
+};
+
+const editData = () => {
+    if (activeGridElement === "") {
+        return;
+    }
+
+    const actRow = document.getElementById(activeGridElement).parentNode;
+
+    for (const it of actRow.childNodes) {
+        if (it.getAttribute("tablename") === "id") {
+            sendFetch("post", "/element", JSON.stringify({table: activeTable, id: it.title}), (response) => {
+                //console.log(response);
+                buildDialogPanelEditor("Редагування елементу", "object", response, (event) => {
+                    let list = document.querySelectorAll('.edit-input-element-'+zIndex);
+                    const obj = {};
+                    for (const el of list) {
+                        const key = el.getAttribute('name');
+                        const value = el.getAttribute('objid') ? el.getAttribute('objid') : el.value;
+                        obj[key] = value;
+                    }
+                    sendFetch("post", "/elementedit", JSON.stringify(obj), (response) => {
+                        console.log(response);
+                        loadTable(false);
+                    },
+                    (error) => {alert(error + `\n       
+                    Зверніться в службу технічної підтримки`);});
+                });
+            },
+            (error) => {alert(error + `\n       
+            Зверніться в службу технічної підтримки`);});           
+        }
+    }
+};
+
+
+/***************Constructor********************/
+let zIndex = 100;
+let listPanel = [];
+
+const zIndexInc = () => {
+    zIndex += 100;
+    return zIndex;
+};
+
+const zIndexDec = () => {
+    zIndex -= 100;
+    return zIndex;
+};
+
+const buildDialogPanelEditor = (caption = "", type = "", obj = {}, callback = () => {}) => {
+    zIndexInc();
+    const mainForm = makeModalFormEditor();
+    document.body.appendChild(mainForm);
+    listPanel.push(mainForm);
+    mainForm.classList.add('modal-panel-dialog');
+
+    const panel = document.createElement('div');
+    mainForm.appendChild(panel);
+    panel.className = 'dialog-form';
+
+    const butClose = document.createElement('button');
+    panel.appendChild(butClose);
+    butClose.className = 'but-close-wrapper-modal';
+    butClose.innerHTML = 'x';
+    butClose.addEventListener('click', closeModalFormEditor);
+
+    const cap = document.createElement('div');
+    panel.appendChild(cap);
+    cap.innerHTML = caption;
+    cap.className = "dialog-caption";
+
+    const workPanel = document.createElement('div');
+    panel.appendChild(workPanel);
+    workPanel.className = "dialog-work-panel";
+
+    const butPanel = document.createElement('div');
+    panel.appendChild(butPanel);
+    butPanel.className = "dialog-but-menu";
+        const butOk = makeButtonEditor(butPanel, "", "Застосувати");
+        butOk.addEventListener('click', callback);
+        butOk.style.marginRight = "10px";
+        const butCancel = makeButtonEditor(butPanel, "", "Закрити");
+        butCancel.addEventListener('click', closeModalFormEditor);
+    
+    switch (type) {
+        case "grid":
+            buildGridPanelEditor(workPanel, obj);
+            butOk.innerHTML = `Обрати`;
+            break;
+    
+        default:
+            for (const objEl of obj) {
+                //console.log(obj);
+                switch (objEl.type) {
+                    case "number":
+                        makeNumberElementPanel(workPanel, objEl);
+                        break;
+                    case "relation":
+                       makeRelationElementPanel(workPanel, objEl);
+                        break;
+                    default:
+                       makeStringElementPanel(workPanel, objEl);
+                        break;
+                }
+            }
+            break;
+    }    
+};
+
+const closeModalFormEditor = (event) => {
+    event.stopPropagation();
+    if (event.keyCode === 27 || 
+        event.target.classList.contains("modal-panel") || 
+        event.target.classList.contains("but-close-wrapper-modal") ||
+        event.target.classList.contains("dialog-but-menu-element")) {
+            let el = listPanel.pop();
+            document.body.removeChild(el);
+            zIndexDec();
+            if (listPanel.length === 0) {
+                document.removeEventListener('keyup', closeModalFormEditor);
+            }
+    }
+};
+
+const buildGridPanelEditor = (parent, obj) => {
+    const grid = document.createElement('table');
+    parent.appendChild(grid);
+    grid.style.maxHeight = "100%";
+
+    const thead = document.createElement('thead');
+    grid.appendChild(thead);
+    //thead.id = 'thead_id';
+    const tr = document.createElement('tr');
+    tr.className = "table-list-tr";
+    thead.appendChild(tr);    
+    for (const it of obj.tableHeaders) {
+        const td = document.createElement('td');
+        td.classList.add("unselectable");
+        tr.appendChild(td);
+        td.innerHTML = it.caption;
+    }
+    
+    const tbody = document.createElement('tbody');
+    grid.appendChild(tbody);
+    for (let index = 0; index < obj.items.length; index++) {
+        const it = obj.items[index];
+        const tr = document.createElement('tr');
+        tr.id = "table_edit_tr@"+index;
+        tbody.appendChild(tr);
+        tr.className = "table-list-tr";
+        tr.classList.add('table-list-tr-edit');
+        tr.setAttribute('objid', it.id);
+        tr.setAttribute('objcap', it.name === undefined ? "------" : it.name);
+        for (const key in it) {
+            if (Object.hasOwnProperty.call(it, key)) {
+                const element = it[key];
+                const td = document.createElement('td');
+                td.id = `table_edit_td_${key}@`+index;
+                td.classList.add("unselectable");
+                tr.appendChild(td);
+                td.innerHTML = element;
+            }
+        }
+        tr.onclick = (event) => {
+            event.stopPropagation();
+            event.preventDefault();
+            let id = event.target.id.split("@")[1];
+            const actTR = document.getElementById("table_edit_tr@"+id);
+            for (const it of document.querySelectorAll('.table-list-tr-edit')) {
+                if (it === actTR) {
+                    for (const iter of it.childNodes) {
+                        iter.classList.add('tr-active');
+                        iter.classList.add('tr-active-edit');
+                    }        
+                } else {
+                    for (const iter of it.childNodes) {
+                        iter.classList.remove('tr-active');
+                        iter.classList.remove('tr-active-edit');
+                    }
+                }
+            }
+        };    
+    }
+    
+    return;
+};
+
+const makeModalFormEditor = () => {
+    const mainForm = document.createElement('div');
+    mainForm.className = 'modal-panel';
+    mainForm.style.zIndex = zIndex;
+    mainForm.addEventListener('click', closeModalFormEditor);
+    if(listPanel.length === 0) {
+        document.addEventListener('keyup', closeModalFormEditor);
+    }
+    return mainForm;
+};
+
+const makeButtonEditor = (parent, id, cap) => {
+    const el = document.createElement('button');
+    parent.appendChild(el);
+    el.id = id;
+    el.innerHTML = cap;
+    el.className = "dialog-but-menu-element";
+    return el;
+};
+
+const makeStringElementPanel = (parent = HTMLDivElement, obj = {}) => {
+    const main = document.createElement('div');
+    parent.appendChild(main);
+
+    if (!obj.show) {
+        main.style.display = "none";
+    }
+
+    const cap = document.createElement('div');
+    main.appendChild(cap);
+    cap.innerHTML = `<span>${obj.caption}</span>`;
+
+    const edit = document.createElement('input');
+    main.appendChild(edit);
+    edit.setAttribute("name", obj.name);
+    edit.classList.add('edit-input-element-'+zIndex);
+    edit.value = obj.value === undefined ? "" : obj.value;
+};
+
+const makeNumberElementPanel = (parent = HTMLDivElement, obj = {}) => {
+    const main = document.createElement('div');
+    parent.appendChild(main);
+
+    if (!obj.show) {
+        main.style.display = "none";
+    }
+
+    const cap = document.createElement('div');
+    main.appendChild(cap);
+    cap.innerHTML = `<span>${obj.caption}</span>`;
+
+    const edit = document.createElement('input');
+    main.appendChild(edit);
+    edit.classList.add('edit-input-element-'+zIndex);
+    edit.setAttribute("name", obj.name);
+    edit.type = "number";
+    edit.value = obj.value === undefined ? "" : obj.value;
+};
+
+const makeRelationElementPanel = (parent = HTMLDivElement, obj = {}) => {
+    //console.log(obj);
+    const main = document.createElement('div');
+    parent.appendChild(main);
+
+    if (!obj.show) {
+        main.style.display = "none";
+    }
+
+    const cap = document.createElement('div');
+    main.appendChild(cap);
+    cap.innerHTML = `<span>${obj.caption}</span>`;
+
+    const wrapper = document.createElement('div');
+    main.appendChild(wrapper);
+        const edit = document.createElement('input');
+        wrapper.appendChild(edit);
+        edit.setAttribute("name", obj.name);
+        edit.classList.add('edit-input-element-'+zIndex);
+        edit.readOnly = true
+        edit.value = obj.value === undefined ? "" : obj.value;
+        edit.setAttribute('objid', obj.id);
+        const butChk = document.createElement('button');
+        butChk.innerHTML = `...`;
+        wrapper.appendChild(butChk);
+        butChk.onclick = (event) => {
+            sendFetch("post", "/elementlist", JSON.stringify({table: activeTable, name: obj.name}), (response) => {
+                //console.log(response);
+                buildDialogPanelEditor(obj.caption, "grid", response, ()=>{
+                    const actEl = document.querySelector('.tr-active-edit');
+                    if (actEl) {
+                        const row = actEl.parentNode;
+                        edit.value = row.getAttribute('objcap');
+                        edit.setAttribute('objid', row.getAttribute('objid'));
+                    }
+                });
+            },
+            (error) => {alert(error + `\n       
+            Зверніться в службу технічної підтримки`);});
+        };
+        const butSwitch = document.createElement('button');
+        butSwitch.innerHTML = `->`;
+        wrapper.appendChild(butSwitch);  
+        butSwitch.onclick = (event) => {
+            const objID = edit.getAttribute('objid');
+            if (objID === "") {
+                return;
+            }
+            const obj = {};
+            obj["id"] = objID;
+            obj["table"] = activeTable;
+            obj["relation"] = "pos";
+            sendFetch("post", "/element", JSON.stringify(obj), (response) => {
+                console.log(response);
+                buildDialogPanelEditor("Редагування елементу", "object", response, (event) => {
+                    let list = document.querySelectorAll('.edit-input-element-'+zIndex);
+                    const obj = {};
+                    for (const el of list) {
+                        const key = el.getAttribute('name');
+                        const value = el.getAttribute('objid') ? el.getAttribute('objid') : el.value;
+                        obj[key] = value;
+                    }
+                    sendFetch("post", "/elementedit", JSON.stringify(obj), (response) => {
+                        console.log(response);
+                        loadTable(false);
+                    },
+                    (error) => {alert(error + `\n       
+                    Зверніться в службу технічної підтримки`);});
+                });
+            },
+            (error) => {alert(error + `\n       
+            Зверніться в службу технічної підтримки`);});
+        };
+};
+
+
+
+/*************************************************************** 
+****************************Editor******************************
+***************************************************************/
+
 
 const makeResize = (event) => {
     event.stopPropagation();
     loadTable();
 };
 
+const addNewElement = event => {
+    event.preventDefault();
+    event.stopPropagation();
+    newData();
+};
+
+const editElement = event => {
+    event.preventDefault();
+    event.stopPropagation();
+    editData();
+};
+
 loadStruct();
 
 window.addEventListener(`resize`, makeResize);
 document.getElementById('butRefresh').addEventListener('click', refreshTable);
+document.getElementById('butAdd').addEventListener('click', addNewElement);
+document.getElementById('butEdit').addEventListener('click', editElement);
 document.getElementById('pagination_left').addEventListener('click', decPage);
 document.getElementById('pagination_right').addEventListener('click', incPage);
 document.getElementById('pagination_input').addEventListener('keyup', inputChangePage);

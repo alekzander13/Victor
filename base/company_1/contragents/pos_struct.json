@@ -1,0 +1,18 @@
+[
+    {
+        "Name":    "id",
+        "Caption": "ID"
+    },
+    {
+        "Name":    "name",
+        "Caption": "Найменування"
+    },
+    {
+        "Name":    "lat",
+        "Caption": "Широта"
+    },
+    {
+        "Name":    "lng",
+        "Caption": "Довгота"
+    }
+]

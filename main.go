@@ -23,6 +23,9 @@ func main() {
 	http.HandleFunc("/", MainHandle)
 	//http.HandleFunc("/company", CompanyHandle)
 	http.HandleFunc("/loadtable", LoadTableHandle)
+	http.HandleFunc("/element", ElementHandle)
+	http.HandleFunc("/elementlist", ElementListHandle)
+	http.HandleFunc("/elementedit", ElementEditHandle)
 
 	srv := &http.Server{
 		Addr:         ":" + port,

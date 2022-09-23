@@ -194,6 +194,11 @@ td{
     color: #fff;
 }
 
+.tr-active {
+    background: #0354e0; 
+    color: #fff; 
+}
+
 
 .active-fast-filter {
     border: 2px solid red;
@@ -289,4 +294,45 @@ td{
     display: flex;
     justify-content: left;
     align-items: center;
+}
+
+/********************************
+            DIALOG BLOCK
+********************************/
+
+.dialog-form {
+    background: white;
+    min-width: 250px;
+    max-width: 450px;
+    min-height: 250px;
+    max-height: 450px;
+    z-index: auto; 
+    position: relative;
+    padding: 5px;
+    border: 1px solid black;
+    border-radius: 1px;
+    display: flex;
+    flex-direction: column;  
+    justify-content: space-between;  
+}
+
+.dialog-caption {
+    margin-bottom: 10px;
+}
+
+.dialog-work-panel {
+    height: 100%;
+    overflow: auto;
+}
+
+.dialog-but-menu {
+    display: flex;
+    padding: 4px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.dialog-but-menu-element {
+    border-radius: 4px;
+    height: 24px;
 }

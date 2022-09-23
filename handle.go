@@ -34,12 +34,13 @@ func LoadTableHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var res head
+	var res mainResponse
 	var tests []dataItem
 
 	tests, err = myBase.getTableData()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	if z.SortName != "" {
@@ -67,58 +68,33 @@ func LoadTableHandle(w http.ResponseWriter, r *http.Request) {
 		tests = tempT
 	}
 
-	/*
-		for i := 1; i <= z.CountOnPage; i++ {
-			it := dataItem{
-				ID:   fmt.Sprintf("%d", i*z.Page),
-				Name: "Квіти України new",
-			}
-			tests = append(tests, it)
-		}
-
-
-		if z.SortName != "" {
-			if z.SortType == "todecrease" {
-				var ttt []dataItem
-				for i := len(tests) - 1; i >= 0; i-- {
-					ttt = append(ttt, tests[i])
-				}
-				copy(tests, ttt)
-			}
-		}
-	*/
-
-	/*
-		res.Fields = []header{
-			{
-				Name:    "id",
-				Caption: "ID",
-			},
-			{
-				Name:    "name",
-				Caption: "Найменування",
-			},
-			{
-				Name:    "pos",
-				Caption: "Позиція",
-			},
-			{
-				Name:    "adress",
-				Caption: "Адреса",
-			},
-		}
-	*/
-
 	res.Table = "Контрагенти"
 
 	res.Fields, err = myBase.getTableStruct()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	res.Page = z.Page
 
 	res.CountPages = 30
+
+	spos, err := myBase.getListTablePos()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	for i, bItem := range tests {
+		for _, sp := range spos {
+			if sp.ID == bItem.Pos {
+				bItem.Pos = sp.Name
+				tests[i] = bItem
+				continue
+			}
+		}
+	}
 
 	res.Elements = tests
 

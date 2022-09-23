@@ -1,8 +1,8 @@
 package main
 
-type head struct {
+type mainResponse struct {
 	Table      string       `json:"table"`
-	Fields     []headerItem `json:"tableHeadres"`
+	Fields     []headerItem `json:"tableHeaders"`
 	Page       int          `json:"page"`
 	CountPages int          `json:"countPage"`
 	Elements   []dataItem   `json:"items"`
@@ -27,4 +27,33 @@ type requestData struct {
 	SortName    string `json:"sort"`
 	SortType    string `json:"sortType"`
 	//FilterName  string `json:"filters"`
+}
+
+type typesElement struct {
+	Name    string `json:"name"`
+	Caption string `json:"caption"`
+	Type    string `json:"type"`
+	Value   string `json:"value"`
+	ID      string `json:"id"`
+	Show    bool   `json:"show"`
+	Many    bool   `json:"many"`
+}
+
+type editElement struct {
+	Table    string `json:"table"`
+	Relation string `json:"relation"`
+	ID       string `json:"id"`
+}
+
+type posResponse struct {
+	Table    string       `json:"table"`
+	Fields   []headerItem `json:"tableHeaders"`
+	Elements []elementPos `json:"items"`
+}
+
+type elementPos struct {
+	ID   string  `json:"id"`
+	Name string  `json:"name"`
+	Lat  float64 `json:"lat"`
+	Lng  float64 `json:"lng"`
 }
