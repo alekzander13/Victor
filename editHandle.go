@@ -54,14 +54,9 @@ func tableContragents(id string) ([]typesElement, error) {
 
 	for _, v := range tableStruct {
 		newEl := typesElement{
-			Name:    v.Name,
-			Caption: v.Caption,
-			Type:    v.Type,
-			Show:    true,
-			Many:    false,
+			Struct: v,
 		}
 		if v.Name == "id" {
-			newEl.Show = false
 			newEl.Value = "0"
 		}
 
@@ -76,8 +71,8 @@ func tableContragents(id string) ([]typesElement, error) {
 		for _, v := range dataList {
 			if id == v.ID {
 				for i, r := range res {
-					if res[i].Type == "relation" {
-						val := fmt.Sprintf("%v", checkJSONTagName(v, r.Name))
+					if res[i].Struct.Type == "relation" {
+						val := fmt.Sprintf("%v", checkJSONTagName(v, r.Struct.Name))
 						spos, err := myBase.getTablePosData()
 						if err != nil {
 							return nil, err
@@ -91,7 +86,7 @@ func tableContragents(id string) ([]typesElement, error) {
 						}
 						continue
 					}
-					res[i].Value = fmt.Sprintf("%v", checkJSONTagName(v, r.Name))
+					res[i].Value = fmt.Sprintf("%v", checkJSONTagName(v, r.Struct.Name))
 				}
 			}
 		}
@@ -108,14 +103,9 @@ func tablePos(id string) ([]typesElement, error) {
 	}
 	for _, v := range tableStruct {
 		newEl := typesElement{
-			Name:    v.Name,
-			Caption: v.Caption,
-			Type:    v.Type,
-			Show:    true,
-			Many:    false,
+			Struct: v,
 		}
 		if v.Name == "id" {
-			newEl.Show = false
 			newEl.Value = "0"
 		}
 		res = append(res, newEl)
@@ -129,7 +119,7 @@ func tablePos(id string) ([]typesElement, error) {
 		for _, v := range dataList {
 			if id == v.ID {
 				for i, r := range res {
-					res[i].Value = fmt.Sprintf("%v", checkJSONTagName(v, r.Name))
+					res[i].Value = fmt.Sprintf("%v", checkJSONTagName(v, r.Struct.Name))
 				}
 			}
 		}

@@ -3,42 +3,63 @@
 		"id": "1064",
 		"name": "ТОВ Фудмережа",
 		"pos": "1",
-		"adress": "Дачна, 96"
+		"adress": "Дачна, 96",
+		"vip": "true"
 	},
 	{
 		"id": "1066",
 		"name": "ФОП Носуля Т.В.",
 		"pos": "2",
-		"adress": "Дачний, 1 (пров.)"
+		"adress": "Дачний, 1 (пров.)",
+		"vip": "false"
 	},
 	{
 		"id": "1067",
 		"name": "ФОП Заєць",
 		"pos": "3",
-		"adress": "Шкільна, 67"
+		"adress": "Шкільна, 67",
+		"vip": "false"
 	},
 	{
 		"id": "1075",
 		"name": "ТОВ ГРАДОСФЕРА",
 		"pos": "4",
-		"adress": "Шкільна, 9"
+		"adress": "Шкільна, 9",
+		"vip": "true"
 	},
 	{
 		"id": "1119",
 		"name": "ФОП Єгоров",
 		"pos": "1",
-		"adress": "Макаренка, 3 Г"
+		"adress": "Макаренка, 3 Г",
+		"vip": "false"
 	},
 	{
 		"id": "5902",
 		"name": "New Client",
 		"pos": "3",
-		"adress": "Test New Adress"
+		"adress": "Test New Adress",
+		"vip": "false"
 	},
 	{
 		"id": "4644",
 		"name": "Tets 2",
+		"pos": "4",
+		"adress": "Test Adress 2",
+		"vip": "true"
+	},
+	{
+		"id": "2356",
+		"name": "New test CLient",
+		"pos": "2",
+		"adress": "Adress new",
+		"vip": "false"
+	},
+	{
+		"id": "2237",
+		"name": "test 3",
 		"pos": "1",
-		"adress": "Test Adress 2"
+		"adress": "111",
+		"vip": ""
 	}
 ]

@@ -2,21 +2,36 @@
     {
         "Name":    "id",
         "Caption": "ID",
-        "Type": "string"
+        "Type": "string",
+        "Show": false,
+        "Many": false
     },
     {
         "Name":    "name",
         "Caption": "Найменування",
-        "Type": "string"
+        "Type": "string",
+        "Show": true,
+        "Many": false
     },
     {
         "Name":    "pos",
         "Caption": "Позиція",
-        "Type": "relation"
+        "Type": "relation",
+        "Show": true,
+        "Many": false
     },
     {
         "Name":    "adress",
         "Caption": "Адреса",
-        "Type": "string"
+        "Type": "string",
+        "Show": true,
+        "Many": false
+    },
+    {
+        "Name":    "vip",
+        "Caption": "VIP",
+        "Type": "booling",
+        "Show": true,
+        "Many": false
     }
 ]

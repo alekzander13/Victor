@@ -95,6 +95,12 @@ func LoadTableHandle(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 		}
+		if bItem.Vip == "true" {
+			bItem.Vip = "Так"
+		} else {
+			bItem.Vip = "Ні"
+		}
+		tests[i] = bItem
 	}
 
 	res.Elements = tests

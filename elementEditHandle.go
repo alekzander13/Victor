@@ -62,11 +62,7 @@ func editPos(body []byte) error {
 	} else {
 		for i, d := range data {
 			if d.ID == obj.ID {
-				d.Lat = obj.Lat
-				d.Lng = obj.Lng
-				d.Name = obj.Name
-
-				data[i] = d
+				data[i] = obj
 			}
 		}
 	}
@@ -96,11 +92,7 @@ func editContragents(body []byte) error {
 	} else {
 		for i, d := range data {
 			if d.ID == obj.ID {
-				d.Adress = obj.Adress
-				d.Name = obj.Name
-				d.Pos = obj.Pos
-
-				data[i] = d
+				data[i] = obj
 			}
 		}
 	}

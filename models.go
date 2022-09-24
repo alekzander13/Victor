@@ -13,16 +13,14 @@ type tableHeader struct {
 	Name    string `json:"name"`
 	Caption string `json:"caption"`
 	Type    string `json:"type"`
+	Show    bool   `json:"show"`
+	Many    bool   `json:"many"`
 }
 
 type typesElement struct {
-	Name    string `json:"name"`
-	Caption string `json:"caption"`
-	Type    string `json:"type"`
-	Value   string `json:"value"`
-	ID      string `json:"id"`
-	Show    bool   `json:"show"`
-	Many    bool   `json:"many"`
+	Struct tableHeader `json:"struct"`
+	Value  string      `json:"value"`
+	ID     string      `json:"id"`
 }
 
 type mainResponseContragents struct {
@@ -38,6 +36,7 @@ type dataItemContragents struct {
 	Name   string `json:"name"`
 	Pos    string `json:"pos"`
 	Adress string `json:"adress"`
+	Vip    string `json:"vip"`
 }
 
 type posResponse struct {

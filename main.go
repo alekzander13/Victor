@@ -20,12 +20,14 @@ func main() {
 		port = os.Args[1]
 	}
 
-	http.HandleFunc("/", MainHandle)
+	http.HandleFunc("/", MainHandle) //Для формування сторінки
+
 	//http.HandleFunc("/company", CompanyHandle)
-	http.HandleFunc("/loadtable", LoadTableHandle)
-	http.HandleFunc("/element", ElementHandle)
-	http.HandleFunc("/elementlist", ElementListHandle)
-	http.HandleFunc("/elementedit", ElementEditHandle)
+
+	http.HandleFunc("/loadtable", LoadTableHandle)     //Завантаження основної таблиці
+	http.HandleFunc("/element", ElementHandle)         //Отримання інформації про об'єкт
+	http.HandleFunc("/elementlist", ElementListHandle) //Отримання списку елементів таблиці
+	http.HandleFunc("/elementedit", ElementEditHandle) //Зміна об'єкту
 
 	srv := &http.Server{
 		Addr:         ":" + port,

@@ -275,7 +275,7 @@ const loadTable = (first = false) => {
         }
     }
 
-    console.log(obj);
+    //console.log(obj);
 
     sendFetch("post", "/loadtable", JSON.stringify(obj), 
     (response) => {
@@ -1000,7 +1000,7 @@ const clearFilter = (event) => {
 ***************************************************************/
 
 const newData = () => {
-    sendFetch("post", "/element?table="+activeTable+"&id=0", null, (response) => {
+    sendFetch("get", "/element?table="+activeTable+"&id=0", null, (response) => {
         //console.log(response);
         buildDialogPanelEditor("Створення нового елементу", "object", response, (event) => {
             let list = document.querySelectorAll('.edit-input-element-'+zIndex);
@@ -1043,6 +1043,7 @@ const editData = () => {
                         const value = el.getAttribute('objid') ? el.getAttribute('objid') : el.value;
                         obj[key] = value;
                     }
+                    //console.log(JSON.stringify(obj));
                     sendFetch("post", "/elementedit?table="+activeTable, JSON.stringify(obj), (response) => {
                         if (response.result !== "ok") {
                             alert(response.result);
@@ -1095,6 +1096,27 @@ const buildDialogPanelEditor = (caption = "", type = "", obj = {}, callback = ()
     panel.appendChild(cap);
     cap.innerHTML = caption;
     cap.className = "dialog-caption";
+    cap.onmousedown = (e) => {
+        let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        //e = e || window.event;
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = () => {
+            document.onmouseup = null;
+            document.onmousemove = null;
+        };
+        document.onmousemove = (event) => {
+            //event = event || window.event;
+            event.preventDefault();
+            pos1 = pos3 - event.clientX;
+            pos2 = pos4 - event.clientY;
+            pos3 = event.clientX;
+            pos4 = event.clientY;
+            panel.style.top = (panel.offsetTop - pos2) + "px";
+            panel.style.left = (panel.offsetLeft - pos1) + "px";
+        };
+    };
 
     const workPanel = document.createElement('div');
     panel.appendChild(workPanel);
@@ -1118,10 +1140,13 @@ const buildDialogPanelEditor = (caption = "", type = "", obj = {}, callback = ()
         default:
             for (const objEl of obj) {
                 //console.log(obj);
-                switch (objEl.type) {
+                switch (objEl.struct.type) {
                     case "number":
                         makeNumberElementPanel(workPanel, objEl);
                         break;
+                    case "booling":
+                        makeBoolingElementPanel(workPanel, objEl);
+                        break;    
                     case "relation":
                        makeRelationElementPanel(workPanel, objEl);
                         break;
@@ -1237,17 +1262,17 @@ const makeStringElementPanel = (parent = HTMLDivElement, obj = {}) => {
     const main = document.createElement('div');
     parent.appendChild(main);
 
-    if (!obj.show) {
+    if (!obj.struct.show) {
         main.style.display = "none";
     }
 
     const cap = document.createElement('div');
     main.appendChild(cap);
-    cap.innerHTML = `<span>${obj.caption}</span>`;
+    cap.innerHTML = `<span>${obj.struct.caption}</span>`;
 
     const edit = document.createElement('input');
     main.appendChild(edit);
-    edit.setAttribute("name", obj.name);
+    edit.setAttribute("name", obj.struct.name);
     edit.classList.add('edit-input-element-'+zIndex);
     edit.value = obj.value === undefined ? "" : obj.value;
 };
@@ -1256,19 +1281,47 @@ const makeNumberElementPanel = (parent = HTMLDivElement, obj = {}) => {
     const main = document.createElement('div');
     parent.appendChild(main);
 
-    if (!obj.show) {
+    if (!obj.struct.show) {
         main.style.display = "none";
     }
 
     const cap = document.createElement('div');
     main.appendChild(cap);
-    cap.innerHTML = `<span>${obj.caption}</span>`;
+    cap.innerHTML = `<span>${obj.struct.caption}</span>`;
 
     const edit = document.createElement('input');
     main.appendChild(edit);
     edit.classList.add('edit-input-element-'+zIndex);
-    edit.setAttribute("name", obj.name);
+    edit.setAttribute("name", obj.struct.name);
     edit.type = "number";
+    edit.value = obj.value === undefined ? "" : obj.value;
+};
+
+const makeBoolingElementPanel = (parent = HTMLDivElement, obj = {}) => {
+    const main = document.createElement('div');
+    parent.appendChild(main);
+
+    if (!obj.struct.show) {
+        main.style.display = "none";
+    }
+
+    const cap = document.createElement('div');
+    main.appendChild(cap);
+    cap.innerHTML = `<span>${obj.struct.caption}</span>`;
+
+    const edit = document.createElement('select');
+    edit.style.width = '50px';
+    main.appendChild(edit);
+    edit.classList.add('edit-input-element-'+zIndex);
+    edit.setAttribute("name", obj.struct.name);
+        const elTrue = document.createElement('option');
+        elTrue.value = "true";
+        elTrue.text = "Так";
+        edit.appendChild(elTrue);
+        const elFalse = document.createElement('option');
+        elFalse.value = "false";
+        elFalse.text = "Ні";
+        edit.appendChild(elFalse);
     edit.value = obj.value === undefined ? "" : obj.value;
 };
 
@@ -1277,19 +1330,19 @@ const makeRelationElementPanel = (parent = HTMLDivElement, objIn = {}) => {
     const main = document.createElement('div');
     parent.appendChild(main);
 
-    if (!objIn.show) {
+    if (!objIn.struct.show) {
         main.style.display = "none";
     }
 
     const cap = document.createElement('div');
     main.appendChild(cap);
-    cap.innerHTML = `<span>${objIn.caption}</span>`;
+    cap.innerHTML = `<span>${objIn.struct.caption}</span>`;
 
     const wrapper = document.createElement('div');
     main.appendChild(wrapper);
         const edit = document.createElement('input');
         wrapper.appendChild(edit);
-        edit.setAttribute("name", objIn.name);
+        edit.setAttribute("name", objIn.struct.name);
         edit.classList.add('edit-input-element-'+zIndex);
         edit.readOnly = true
         edit.value = objIn.value === undefined ? "" : objIn.value;
@@ -1298,9 +1351,9 @@ const makeRelationElementPanel = (parent = HTMLDivElement, objIn = {}) => {
         butChk.innerHTML = `...`;
         wrapper.appendChild(butChk);
         butChk.onclick = (event) => {
-            sendFetch("post", "/elementlist", JSON.stringify({table: activeTable, name: objIn.name}), (response) => {
+            sendFetch("get", "/elementlist?table="+objIn.struct.name, null, (response) => {
                 //console.log(response);
-                buildDialogPanelEditor(objIn.caption, "grid", response, ()=>{
+                buildDialogPanelEditor(objIn.struct.caption, "grid", response, ()=>{
                     const actEl = document.querySelector('.tr-active-edit');
                     if (actEl) {
                         const row = actEl.parentNode;
@@ -1320,8 +1373,8 @@ const makeRelationElementPanel = (parent = HTMLDivElement, objIn = {}) => {
             if (objID === "") {
                 return;
             }
-            sendFetch("get", "/element?table="+objIn.name+"&id="+objID, null, (response) => {
-                console.log(response);
+            sendFetch("get", "/element?table="+objIn.struct.name+"&id="+objID, null, (response) => {
+                //console.log(response);
                 buildDialogPanelEditor("Редагування елементу", "object", response, (event) => {
                     let list = document.querySelectorAll('.edit-input-element-'+zIndex);
                     const obj = {};
@@ -1335,7 +1388,7 @@ const makeRelationElementPanel = (parent = HTMLDivElement, objIn = {}) => {
                         }
                         obj[key] = value;
                     }
-                    sendFetch("post", "/elementedit?table="+objIn.name, JSON.stringify(obj), (response) => {
+                    sendFetch("post", "/elementedit?table="+objIn.struct.name, JSON.stringify(obj), (response) => {
                         if (response.result !== "ok") {
                             alert(response.result);
                         }

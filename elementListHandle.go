@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
 )
 
@@ -11,31 +10,14 @@ func ElementListHandle(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	w.Header().Set("Cache-Control", "no-store")
 
-	if r.Method != "POST" {
+	if r.Method != "GET" {
 		http.Error(w, "bad request method", http.StatusMethodNotAllowed)
 		return
 	}
 
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+	table := r.FormValue("table")
 
-	type rel struct {
-		Table string `json:"table"`
-		Name  string `json:"name"`
-	}
-
-	var obj rel
-
-	err = json.Unmarshal(body, &obj)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	switch obj.Name {
+	switch table {
 	case "pos":
 		rList, err := myBase.getTablePosData()
 		if err != nil {
@@ -44,7 +26,7 @@ func ElementListHandle(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var result posResponse
-		result.Table = obj.Table
+		result.Table = table
 		result.Elements = rList
 
 		result.Fields, err = myBase.getTablePosStruct()
