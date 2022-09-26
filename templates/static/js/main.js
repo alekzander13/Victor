@@ -1203,7 +1203,7 @@ const buildGridPanelEditor = (parent, obj) => {
         tr.className = "table-list-tr";
         tr.classList.add('table-list-tr-edit');
         tr.setAttribute('objid', it.id);
-        tr.setAttribute('objcap', it.name === undefined ? "------" : it.name);
+        tr.setAttribute('objcap', it.name === undefined ? "" : it.name);
         for (const key in it) {
             if (Object.hasOwnProperty.call(it, key)) {
                 const element = it[key];
@@ -1364,6 +1364,13 @@ const makeRelationElementPanel = (parent = HTMLDivElement, objIn = {}) => {
             },
             (error) => {alert(error + `\n       
             Зверніться в службу технічної підтримки`);});
+        };
+        const butDel = document.createElement('button');
+        butDel.innerHTML = `X`;
+        wrapper.appendChild(butDel);
+        butDel.onclick = (event) => {
+            edit.value = '';
+            edit.setAttribute('objid', '0');
         };
         const butSwitch = document.createElement('button');
         butSwitch.innerHTML = `->`;
