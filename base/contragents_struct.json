@@ -14,6 +14,13 @@
         "Many": false
     },
     {
+        "Name":    "contragents",
+        "Caption": "Головний контрагент",
+        "Type": "relation",
+        "Show": true,
+        "Many": false
+    },
+    {
         "Name":    "pos",
         "Caption": "Позиція",
         "Type": "relation",

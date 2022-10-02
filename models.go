@@ -32,17 +32,26 @@ type mainResponseContragents struct {
 }
 
 type dataItemContragents struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	Pos    string `json:"pos"`
-	Adress string `json:"adress"`
-	Vip    string `json:"vip"`
+	ID             string `json:"id"`
+	Name           string `json:"name"`
+	Maincontragent string `json:"contragents"`
+	Pos            string `json:"pos"`
+	Adress         string `json:"adress"`
+	Vip            string `json:"vip"`
 }
 
 type posResponse struct {
 	Table    string        `json:"table"`
 	Fields   []tableHeader `json:"tableHeaders"`
 	Elements []dataItemPos `json:"items"`
+}
+
+type mainResponsePos struct {
+	Table      string        `json:"table"`
+	Fields     []tableHeader `json:"tableHeaders"`
+	Page       int           `json:"page"`
+	CountPages int           `json:"countPage"`
+	Elements   []dataItemPos `json:"items"`
 }
 
 type dataItemPos struct {

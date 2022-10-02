@@ -42,6 +42,30 @@ func ElementListHandle(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Write(b)
 		return
+	case "contragents":
+		rList, err := myBase.getTableContragentsData()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		var result mainResponseContragents
+		result.Table = table
+		result.Elements = rList
+
+		result.Fields, err = myBase.getTableContragentsStruct()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		b, err := json.Marshal(result)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Write(b)
+		return
 	default:
 	}
 

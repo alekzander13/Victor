@@ -28,6 +28,8 @@ func ElementEditHandle(w http.ResponseWriter, r *http.Request) {
 	switch r.FormValue("table") {
 	case "contragents":
 		err = editContragents(body)
+	case "contragent":
+		err = editContragents(body)
 	case "pos":
 		err = editPos(body)
 	}

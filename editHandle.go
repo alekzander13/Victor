@@ -24,7 +24,6 @@ func ElementHandle(w http.ResponseWriter, r *http.Request) {
 	switch table {
 	case "contragents":
 		res, err = tableContragents(id)
-
 	case "pos":
 		res, err = tablePos(id)
 
@@ -84,6 +83,16 @@ func tableContragents(id string) ([]typesElement, error) {
 								break
 							}
 						}
+						for _, v := range dataList {
+							if v.ID == val {
+								res[i].ID = v.ID
+								res[i].Value = v.Name
+								break
+							}
+						}
+						listContrAg := make([]dataItemContragents, len(dataList))
+						copy(listContrAg, dataList)
+
 						continue
 					}
 					res[i].Value = fmt.Sprintf("%v", checkJSONTagName(v, r.Struct.Name))

@@ -313,6 +313,19 @@ td{
     justify-content: space-between;  
 }
 
+.dialog-form-maximazed {
+    background: white;
+    width: 100%;
+    height: 100%;
+    z-index: auto; 
+    position: absolute;
+    border: 1px solid black;
+    border-radius: 1px;
+    display: flex;
+    flex-direction: column;  
+    justify-content: space-between;  
+}
+
 .dialog-caption {
     height: 32px;
     padding: 4px;
@@ -336,4 +349,178 @@ td{
 .dialog-but-menu-element {
     border-radius: 4px;
     height: 24px;
+}
+
+.but-sizer-wrapper-modal {
+    position: absolute;
+    z-index: 2; 
+    right: 28px;
+    top: 0px;
+    margin: 4px;
+    height: 24px;
+    width: 24px;
+    font-size: 16px;
+    border: 0px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.dialog-panel-grid-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+}
+
+
+/********************************
+        DIALOG BLOCK Class
+********************************/
+
+.grid-form-wrapper {
+    position: fixed;
+    width:100%;
+    height:100%;
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    background: rgb(255 255 255 / 50%);
+    opacity: 1; 
+    left:0;
+    top:0;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+}
+
+.grid-form-main {
+    background: white;
+    width: 80%;
+    height: 80%;
+    z-index: auto; 
+    position: absolute;
+    border: 1px solid black;
+    border-radius: 1px;
+    display: flex;
+    flex-direction: column;  
+    justify-content: space-between;  
+}
+
+.grid-form-main-maximazed {
+    width: 100%;
+    height: 100%; 
+}
+
+.grid-form-caption {
+    height: 32px;
+    padding: 0 4px 0 4px;
+    background-color: cadetblue;
+    cursor: move;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.grid-form-panel {
+    padding: 4px;
+    height: 100%;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.grid-form-but-menu {
+    display: flex;
+    padding: 4px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.grid-form-pagination-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color: #c2bec3;
+	padding: 4px;
+}
+
+.grid-form-pagination-field {
+    display: flex;
+    flex-direction: row;
+}
+
+
+.filer-form-wrapper {
+    position: fixed;
+    width:100%;
+    height:100%;
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    background: rgb(255 255 255 / 50%);
+    opacity: 1; 
+    left:0;
+    top:0;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+}
+
+.filer-form-dialog {
+    background: white;
+    width: 450px;
+    height: 450px;
+    z-index: auto; 
+    position: absolute;
+    border: 1px solid black;
+    border-radius: 1px;
+    display: flex;
+    flex-direction: column;  
+    justify-content: flex-start;  
+}
+
+.filer-form-but-menu {
+    display: flex;
+    padding: 4px;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+
+.dialog-form-wrapper {
+    position: fixed;
+    width:100%;
+    height:100%;
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    background: rgb(255 255 255 / 50%);
+    opacity: 1; 
+    left:0;
+    top:0;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+}
+
+.dialog-form-panel {
+    background: white;
+    z-index: auto; 
+    position: absolute;
+    border: 1px solid black;
+    border-radius: 1px;
+    display: flex;
+    flex-direction: column;  
+    justify-content: flex-start;
+}
+
+.dialog-form-caption {
+    height: 32px;
+    padding: 0 4px 0 4px;
+    background-color: cadetblue;
+    cursor: move;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
 }

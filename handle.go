@@ -27,21 +27,44 @@ func LoadTableHandle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var z requestData
-	err = json.Unmarshal(b, &z)
+	var reqData requestData
+	err = json.Unmarshal(b, &reqData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	var res mainResponseContragents
-	var tests []dataItemContragents
+	var body []byte
 
-	tests, err = myBase.getTableContragentsData()
+	switch reqData.Table {
+	case "contragents":
+		body, err = makeContragents(reqData)
+	case "pos":
+		body, err = makePos(reqData)
+	default:
+		http.Error(w, "bad table name: "+reqData.Table, http.StatusInternalServerError)
+		return
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	w.Write(body)
+}
+
+func makeContragents(z requestData) ([]byte, error) {
+	var res mainResponseContragents
+
+	tests, err := myBase.getTableContragentsData()
+	if err != nil {
+		return nil, err
+	}
+
+	listContrAg := make([]dataItemContragents, len(tests))
+
+	copy(listContrAg, tests)
 
 	if z.SortName != "" {
 		var tempT []dataItemContragents
@@ -73,8 +96,7 @@ func LoadTableHandle(w http.ResponseWriter, r *http.Request) {
 
 	res.Fields, err = myBase.getTableContragentsStruct()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	res.Page = z.Page
@@ -83,8 +105,7 @@ func LoadTableHandle(w http.ResponseWriter, r *http.Request) {
 
 	spos, err := myBase.getTablePosData()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	for i, bItem := range tests {
@@ -95,6 +116,15 @@ func LoadTableHandle(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 		}
+
+		for _, ca := range listContrAg {
+			if ca.ID == bItem.Maincontragent {
+				bItem.Maincontragent = ca.Name
+				tests[i] = bItem
+				continue
+			}
+		}
+
 		if bItem.Vip == "true" {
 			bItem.Vip = "Так"
 		} else {
@@ -105,13 +135,57 @@ func LoadTableHandle(w http.ResponseWriter, r *http.Request) {
 
 	res.Elements = tests
 
-	body, err := json.Marshal(res)
+	return json.Marshal(res)
+}
+
+func makePos(z requestData) ([]byte, error) {
+	var res mainResponsePos
+
+	tests, err := myBase.getTablePosData()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
-	w.Write(body)
+	if z.SortName != "" {
+		var tempT []dataItemPos
+		var IDs []int
+		mmap := make(map[int]dataItemPos)
+		for _, v := range tests {
+			id, err := strconv.Atoi(v.ID)
+			if err != nil {
+				continue
+			}
+			mmap[id] = v
+			IDs = append(IDs, id)
+		}
+		sort.Ints(IDs)
+		if z.SortType == "toincrease" {
+			for _, id := range IDs {
+				tempT = append(tempT, mmap[id])
+			}
+		} else {
+			for i := len(IDs) - 1; i >= 0; i-- {
+				tempT = append(tempT, mmap[IDs[i]])
+			}
+		}
+
+		tests = tempT
+	}
+
+	res.Table = "Позиція"
+
+	res.Fields, err = myBase.getTablePosStruct()
+	if err != nil {
+		return nil, err
+	}
+
+	res.Page = z.Page
+
+	res.CountPages = 30
+
+	res.Elements = tests
+
+	return json.Marshal(res)
 }
 
 /*

@@ -2,6 +2,7 @@
 	{
 		"id": "1064",
 		"name": "ТОВ Фудмережа",
+		"contragents": "",
 		"pos": "1",
 		"adress": "Дачна, 96",
 		"vip": "true"
@@ -9,6 +10,7 @@
 	{
 		"id": "1066",
 		"name": "ФОП Носуля Т.В.",
+		"contragents": "",
 		"pos": "2",
 		"adress": "Дачний, 1 (пров.)",
 		"vip": "false"
@@ -16,13 +18,15 @@
 	{
 		"id": "1067",
 		"name": "ФОП Заєць",
+		"contragents": "",
 		"pos": "4",
 		"adress": "Шкільна, 67",
-		"vip": "false"
+		"vip": "true"
 	},
 	{
 		"id": "1075",
 		"name": "ТОВ ГРАДОСФЕРА",
+		"contragents": "0",
 		"pos": "4",
 		"adress": "Шкільна, 9",
 		"vip": "true"
@@ -30,6 +34,7 @@
 	{
 		"id": "1119",
 		"name": "ФОП Єгоров",
+		"contragents": "",
 		"pos": "1",
 		"adress": "Макаренка, 3 Г",
 		"vip": "false"
@@ -37,6 +42,7 @@
 	{
 		"id": "5902",
 		"name": "New Client",
+		"contragents": "",
 		"pos": "3",
 		"adress": "Test New Adress",
 		"vip": "false"
@@ -44,6 +50,7 @@
 	{
 		"id": "4644",
 		"name": "Tets 2",
+		"contragents": "5902",
 		"pos": "4",
 		"adress": "Test Adress 2",
 		"vip": "true"
@@ -51,6 +58,7 @@
 	{
 		"id": "2356",
 		"name": "New test CLient",
+		"contragents": "",
 		"pos": "2",
 		"adress": "Adress new",
 		"vip": "false"
@@ -58,8 +66,25 @@
 	{
 		"id": "2237",
 		"name": "test 3",
+		"contragents": "1075",
 		"pos": "1",
 		"adress": "111",
+		"vip": ""
+	},
+	{
+		"id": "3228",
+		"name": "New Test ConttrAgent",
+		"contragents": "1067",
+		"pos": "7679",
+		"adress": "fdsfdsfsdf",
+		"vip": "false"
+	},
+	{
+		"id": "6636",
+		"name": "New Contragent",
+		"contragents": "0",
+		"pos": "3492",
+		"adress": "",
 		"vip": ""
 	}
 ]
