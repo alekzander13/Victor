@@ -604,7 +604,13 @@ class GridPanelSelectObj {
             event.preventDefault();
             if (form.classList.contains('grid-form-main-maximazed')) {
                 form.classList.remove('grid-form-main-maximazed'); 
+                form.style.top = this._posTop;
+                form.style.left = this._posLeft;
             } else {
+                this._posTop = form.style.top;
+                this._posLeft = form.style.left;
+                form.style.top = '0';
+                form.style.left = '0';
                 form.classList.add('grid-form-main-maximazed');  
             }
             objGridPan.Resize(event);
@@ -1510,7 +1516,7 @@ class Editor {
                 sendFetch("get", "/elementlist?table="+objIn.struct.name, null, (response) => {
                     //console.log(response);
                     const pan = new GridPanelSelectObj(objIn.struct.name, "Обрати елемент", (el) => {
-                        console.log(el);
+                        //console.log(el);
                         if (el) {
                             edit.value = el.getAttribute('objcap');
                             edit.setAttribute('objid', el.getAttribute('objid'));
@@ -1550,9 +1556,12 @@ class Editor {
                             }
                             obj[key] = value;
                         }
-                        sendFetch("post", "/elementedit?table="+this.tableName, JSON.stringify(obj), (response) => {
+                        sendFetch("post", "/elementedit?table="+objIn.struct.name, JSON.stringify(obj), (response) => {
                             if (response.result !== "ok") {
                                 alert(response.result);
+                            } else {
+                                edit.value = obj.name;
+                                edit.setAttribute('objid', obj.id);
                             }
                         },
                         (error) => {alert(error + `\n       

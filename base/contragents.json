@@ -81,9 +81,17 @@
 	},
 	{
 		"id": "6636",
-		"name": "New Contragent",
-		"contragents": "0",
+		"name": "New Contragent 22",
+		"contragents": "",
 		"pos": "3492",
+		"adress": "",
+		"vip": ""
+	},
+	{
+		"id": "1642",
+		"name": "",
+		"contragents": "6636",
+		"pos": "4984",
 		"adress": "",
 		"vip": ""
 	}
